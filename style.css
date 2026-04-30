@@ -646,3 +646,67 @@ h1 {
     height: 180px;
   }
 }
+
+/* ===== CORREÇÃO BLOCO DATA + HORÁRIOS ===== */
+
+.schedule-panel {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.schedule-panel > label,
+.schedule-panel > div {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.schedule-panel input[type="date"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.time-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex !important;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  padding: 4px 2px 12px;
+  box-sizing: border-box;
+}
+
+.time-btn {
+  min-width: 136px;
+  max-width: 136px;
+  flex: 0 0 136px;
+  min-height: 82px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .schedule-panel {
+    padding: 14px;
+  }
+
+  .time-btn {
+    min-width: 122px;
+    max-width: 122px;
+    flex-basis: 122px;
+  }
+
+  .time-hour {
+    font-size: 1.12rem;
+  }
+
+  .time-status {
+    font-size: 0.62rem;
+  }
+}
