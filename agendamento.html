@@ -23,40 +23,41 @@
       </div>
 
       <form id="bookingForm" class="booking-form">
-        <label>
-          Nome completo
-          <input type="text" id="nome" placeholder="Seu nome" required />
-        </label>
 
-        <label>
-          WhatsApp
-          <input type="tel" id="whatsapp" placeholder="51999999999" required />
-        </label>
+  <section class="schedule-panel">
+    <div class="schedule-panel-header">
+      <span>Escolha seu horário</span>
+      <small>Arraste para o lado ou aguarde</small>
+    </div>
 
-        <section class="schedule-panel">
-  <div class="schedule-panel-header">
-    <span>Escolha seu horário</span>
-    <small>Arraste para o lado ou aguarde</small>
-  </div>
+    <label>
+      Data
+      <input type="date" id="data" required />
+    </label>
 
-      <label>
-        Data
-        <input type="date" id="data" required />
-      </label>
-    
-      <div>
-        <span class="field-title">Horários disponíveis</span>
-        <div id="timeGrid" class="time-grid"></div>
-      </div>
-    </section>
+    <div>
+      <span class="field-title">Horários disponíveis</span>
+      <div id="timeGrid" class="time-grid"></div>
+    </div>
+  </section>
 
-        <label>
-          Observação
-          <textarea id="observacao" rows="3" placeholder="Ex: jogo entre amigos, mensalista, etc."></textarea>
-        </label>
+  <label>
+    Nome completo
+    <input type="text" id="nome" placeholder="Seu nome" required />
+  </label>
 
-        <button type="submit" class="btn booking-btn">Confirmar agendamento</button>
-      </form>
+  <label>
+    WhatsApp
+    <input type="tel" id="whatsapp" placeholder="51999999999" required />
+  </label>
+
+  <label>
+    Observação
+    <textarea id="observacao" rows="3" placeholder="Ex: jogo entre amigos, mensalista, etc."></textarea>
+  </label>
+
+  <button type="submit" class="btn booking-btn">Confirmar agendamento</button>
+</form>
 
       <div id="successBox" class="success-box hidden">
         <h2>Horário selecionado!</h2>
