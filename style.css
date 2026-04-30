@@ -603,3 +603,46 @@ h1 {
     padding: 7px 12px;
   }
 }
+
+/* ===== GALERIA INTERNA DA ARENA ===== */
+
+.arena-gallery {
+  width: 100%;
+  margin: -8px 0 18px;
+  overflow: hidden;
+}
+
+.arena-gallery-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 8px;
+}
+
+.arena-gallery-track::-webkit-scrollbar {
+  display: none;
+}
+
+.arena-gallery-item {
+  min-width: 78%;
+  height: 145px;
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  border-radius: 22px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.34),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+@media (min-width: 520px) {
+  .arena-gallery-item {
+    min-width: 68%;
+    height: 180px;
+  }
+}
