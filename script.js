@@ -30,10 +30,37 @@ const arenas = {
 
 function iniciarCarrossel(imagens) {
   const carousel = document.getElementById("bookingCarousel");
-
+  const galleryTrack = document.getElementById("arenaGalleryTrack");
+  
   if (!carousel || !imagens || imagens.length === 0) return;
 
   carousel.innerHTML = "";
+
+  if (galleryTrack) {
+  galleryTrack.innerHTML = "";
+
+  imagens.forEach((imagem) => {
+    const item = document.createElement("div");
+    item.className = "arena-gallery-item";
+    item.style.backgroundImage = `url('${imagem}')`;
+    galleryTrack.appendChild(item);
+  });
+
+  setInterval(() => {
+    const item = galleryTrack.querySelector(".arena-gallery-item");
+    if (!item) return;
+
+    const itemWidth = item.offsetWidth + 12;
+    const chegouNoFim =
+      galleryTrack.scrollLeft + galleryTrack.clientWidth >= galleryTrack.scrollWidth - 5;
+
+    if (chegouNoFim) {
+      galleryTrack.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      galleryTrack.scrollBy({ left: itemWidth, behavior: "smooth" });
+    }
+  }, 3000);
+}
 
   imagens.forEach((imagem, index) => {
     const slide = document.createElement("div");
