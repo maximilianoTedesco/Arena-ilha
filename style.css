@@ -167,3 +167,20 @@ h1 {
     height: 150px;
   }
 }
+
+.destaque-logo {
+  width: min(380px, 90%);
+  margin: 0 auto 28px;
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
+}
+
+.destaque-logo {
+  width: min(380px, 90%);
+  margin: 0 auto 28px;
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
+  transition: 0.3s ease;
+}
+
+.destaque-logo:hover {
+  transform: scale(1.05);
+}
