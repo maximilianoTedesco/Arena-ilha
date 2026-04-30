@@ -2,14 +2,56 @@ const arenas = {
   intersul: {
     nome: "Arena Intersul",
     logo: "assets/LOGO ARENA INTERSUL.png",
-    whatsapp: "5551995766825"
+    whatsapp: "5551995766825",
+    imagens: [
+      "assets/intersul-01.jpg",
+      "assets/intersul-02.jpg",
+      "assets/intersul-03.jpg"
+    ]
   },
+
   alvorada: {
     nome: "Arena Alvorada",
     logo: "assets/LOGO ARENA ALVORADA.png",
-    whatsapp: "5551995766825"
+    whatsapp: "5551995766825",
+    imagens: [
+      "assets/alvorada-01.jpg",
+      "assets/alvorada-02.jpg",
+      "assets/alvorada-03.jpg"
+    ]
   }
 };
+
+function iniciarCarrossel(imagens) {
+  const carousel = document.getElementById("bookingCarousel");
+
+  if (!carousel || !imagens || imagens.length === 0) return;
+
+  carousel.innerHTML = "";
+
+  imagens.forEach((imagem, index) => {
+    const slide = document.createElement("div");
+    slide.className = "carousel-slide";
+    slide.style.backgroundImage = `url('${imagem}')`;
+
+    if (index === 0) {
+      slide.classList.add("active");
+    }
+
+    carousel.appendChild(slide);
+  });
+
+  const slides = carousel.querySelectorAll(".carousel-slide");
+  let currentSlide = 0;
+
+  setInterval(() => {
+    slides[currentSlide].classList.remove("active");
+
+    currentSlide = (currentSlide + 1) % slides.length;
+
+    slides[currentSlide].classList.add("active");
+  }, 4500);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const bookingBody = document.getElementById("bookingBody");
@@ -37,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   arenaTitle.textContent = arena.nome;
   arenaLogo.src = arena.logo;
   arenaLogo.alt = arena.nome;
+  iniciarCarrossel(arena.imagens);
 
   const today = new Date();
   dataInput.min = today.toISOString().split("T")[0];
