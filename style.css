@@ -194,3 +194,175 @@ h1 {
     max-width: 220px;
   }
 }
+
+/* ===== AGENDAMENTO MOBILE FIRST ===== */
+
+.booking-page {
+  min-height: 100vh;
+  padding: 18px;
+  background:
+    radial-gradient(circle at top, rgba(0,168,89,0.28), transparent 36%),
+    radial-gradient(circle at bottom, rgba(255,215,0,0.14), transparent 42%),
+    linear-gradient(135deg, #1f1f1f, var(--dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-card {
+  width: min(620px, 100%);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.top-back {
+  margin: 0 0 18px;
+}
+
+.booking-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.booking-logo {
+  width: 130px;
+  max-width: 70%;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,0.45));
+}
+
+.booking-label {
+  display: inline-block;
+  background: rgba(255, 215, 0, 0.12);
+  color: var(--gold);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.booking-header h1 {
+  font-size: clamp(1.9rem, 8vw, 3rem);
+  margin-bottom: 8px;
+}
+
+.booking-header p {
+  color: rgba(255,255,255,0.78);
+  line-height: 1.5;
+}
+
+.booking-form {
+  display: grid;
+  gap: 16px;
+}
+
+.booking-form label,
+.field-title {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.booking-form input,
+.booking-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+  border-radius: 16px;
+  padding: 15px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.booking-form input:focus,
+.booking-form textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.14);
+}
+
+.booking-form input::placeholder,
+.booking-form textarea::placeholder {
+  color: rgba(255,255,255,0.45);
+}
+
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.time-btn {
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+  border-radius: 16px;
+  padding: 14px 10px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.time-btn.active {
+  background: var(--gold);
+  color: var(--dark);
+  border-color: var(--gold);
+}
+
+.time-btn.disabled,
+.time-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.booking-btn {
+  width: 100%;
+  border: none;
+  margin-top: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.success-box {
+  margin-top: 18px;
+  padding: 22px;
+  text-align: center;
+  background: rgba(0,168,89,0.16);
+  border: 1px solid rgba(0,168,89,0.45);
+  border-radius: 22px;
+}
+
+.success-box h2 {
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.success-box p {
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.whatsapp-btn {
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (min-width: 520px) {
+  .time-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .booking-card {
+    padding: 30px;
+  }
+}
+
