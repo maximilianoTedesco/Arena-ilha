@@ -195,31 +195,73 @@ h1 {
   }
 }
 
-/* ===== AGENDAMENTO MOBILE FIRST ===== */
+/* ===== AGENDAMENTO PREMIUM MOBILE FIRST ===== */
 
 .booking-page {
   min-height: 100vh;
   padding: 18px;
-  background:
-    radial-gradient(circle at top, rgba(0,168,89,0.28), transparent 36%),
-    radial-gradient(circle at bottom, rgba(255,215,0,0.14), transparent 42%),
-    linear-gradient(135deg, #1f1f1f, var(--dark));
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.booking-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(0,0,0,0.62), rgba(0,0,0,0.78)),
+    radial-gradient(circle at top left, rgba(255,255,255,0.16), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255,215,0,0.18), transparent 34%);
+  z-index: 0;
+}
+
+.booking-page::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 215, 0, 0.13);
+  filter: blur(18px);
+  top: -80px;
+  right: -90px;
+  z-index: 0;
+}
+
+.theme-intersul .booking-page {
+  background:
+    linear-gradient(135deg, #061d14, #1f1f1f 52%, #101010);
+}
+
+.theme-alvorada .booking-page {
+  background:
+    linear-gradient(135deg, #071927, #1f1f1f 52%, #101010);
 }
 
 .booking-card {
   width: min(620px, 100%);
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 26px;
-  box-shadow: var(--shadow);
+  position: relative;
+  z-index: 1;
   padding: 22px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 26px 80px rgba(0,0,0,0.48),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  backdrop-filter: blur(18px);
 }
 
 .top-back {
-  margin: 0 0 18px;
+  display: inline-flex;
+  margin-bottom: 18px;
+  color: rgba(255,255,255,0.78);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 .booking-header {
@@ -228,32 +270,41 @@ h1 {
 }
 
 .booking-logo {
-  width: 130px;
+  width: 124px;
   max-width: 70%;
   margin-bottom: 14px;
-  filter: drop-shadow(0 10px 24px rgba(0,0,0,0.45));
+  filter: drop-shadow(0 14px 28px rgba(0,0,0,0.5));
 }
 
 .booking-label {
-  display: inline-block;
-  background: rgba(255, 215, 0, 0.12);
-  color: var(--gold);
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 7px 14px;
-  font-size: 0.82rem;
-  font-weight: 800;
   margin-bottom: 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.34);
 }
 
 .booking-header h1 {
-  font-size: clamp(1.9rem, 8vw, 3rem);
-  margin-bottom: 8px;
+  font-size: clamp(2rem, 9vw, 3.2rem);
+  line-height: 1;
+  margin-bottom: 10px;
+  color: #fff;
 }
 
 .booking-header p {
-  color: rgba(255,255,255,0.78);
+  max-width: 390px;
+  margin: 0 auto;
+  color: rgba(255,255,255,0.72);
   line-height: 1.5;
+  font-size: 0.96rem;
 }
 
 .booking-form {
@@ -265,77 +316,98 @@ h1 {
 .field-title {
   display: grid;
   gap: 8px;
-  font-weight: 800;
-  color: var(--white);
+  color: rgba(255,255,255,0.88);
+  font-weight: 850;
+  font-size: 0.92rem;
 }
 
 .booking-form input,
 .booking-form textarea {
   width: 100%;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.1);
-  color: var(--white);
-  border-radius: 16px;
-  padding: 15px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.22);
+  color: #fff;
+  border-radius: 18px;
+  padding: 15px 16px;
   font-size: 1rem;
   outline: none;
+  transition: 0.22s ease;
 }
 
 .booking-form input:focus,
 .booking-form textarea:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(255,215,0,0.14);
+  border-color: rgba(255,215,0,0.7);
+  box-shadow: 0 0 0 4px rgba(255,215,0,0.11);
+  background: rgba(0,0,0,0.32);
 }
 
 .booking-form input::placeholder,
 .booking-form textarea::placeholder {
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.38);
 }
 
 .time-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 11px;
 }
 
 .time-btn {
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.1);
-  color: var(--white);
-  border-radius: 16px;
-  padding: 14px 10px;
-  font-weight: 900;
+  min-height: 54px;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.045));
+  color: #fff;
+  font-weight: 950;
+  font-size: 0.98rem;
   cursor: pointer;
   transition: 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.time-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,215,0,0.45);
 }
 
 .time-btn.active {
-  background: var(--gold);
-  color: var(--dark);
-  border-color: var(--gold);
+  background: linear-gradient(135deg, #ffd700, #f6b800);
+  color: #1f1f1f;
+  border-color: rgba(255,215,0,0.95);
+  box-shadow:
+    0 12px 26px rgba(255,215,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.45);
 }
 
 .time-btn.disabled,
 .time-btn:disabled {
-  opacity: 0.38;
+  opacity: 0.35;
   cursor: not-allowed;
+  transform: none;
 }
 
 .booking-btn {
   width: 100%;
   border: none;
-  margin-top: 4px;
+  margin-top: 6px;
+  padding: 16px;
+  border-radius: 999px;
   font-size: 1rem;
+  font-weight: 950;
   cursor: pointer;
+  background: linear-gradient(135deg, #ffd700, #f5b900);
+  color: #1f1f1f;
+  box-shadow: 0 16px 34px rgba(255,215,0,0.22);
 }
 
 .success-box {
   margin-top: 18px;
-  padding: 22px;
+  padding: 24px;
   text-align: center;
+  border-radius: 24px;
   background: rgba(0,168,89,0.16);
-  border: 1px solid rgba(0,168,89,0.45);
-  border-radius: 22px;
+  border: 1px solid rgba(0,168,89,0.46);
 }
 
 .success-box h2 {
@@ -365,4 +437,26 @@ h1 {
     padding: 30px;
   }
 }
+@media (min-width: 520px) {
+  .time-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 
+  .booking-card {
+    padding: 30px;
+  }
+}
+
+/* ===== FUNDO PERSONALIZADO POR ARENA ===== */
+
+.theme-intersul .booking-page {
+  background:
+    linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.82)),
+    url("assets/fundo-intersul.jpg") center/cover no-repeat;
+}
+
+.theme-alvorada .booking-page {
+  background:
+    linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.82)),
+    url("assets/fundo-alvorada.jpg") center/cover no-repeat;
+}
