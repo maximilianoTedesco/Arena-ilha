@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const arena = arenas[arenaKey] || arenas.intersul;
 
   let selectedTime = "";
+  let autoScrollHorarios;
 
   if (bookingBody) {
     bookingBody.classList.add(`theme-${arenaKey}`);
@@ -100,6 +101,31 @@ document.addEventListener("DOMContentLoaded", () => {
     return `arena_${arenaKey}_${date}_${time}`;
   }
 
+  function iniciarCarrosselHorarios() {
+    clearInterval(autoScrollHorarios);
+
+    autoScrollHorarios = setInterval(() => {
+      const card = timeGrid.querySelector(".time-btn:not(:disabled)");
+      if (!card) return;
+
+      const cardWidth = card.offsetWidth + 12;
+      const chegouNoFim =
+        timeGrid.scrollLeft + timeGrid.clientWidth >= timeGrid.scrollWidth - 5;
+
+      if (chegouNoFim) {
+        timeGrid.scrollTo({
+          left: 0,
+          behavior: "smooth"
+        });
+      } else {
+        timeGrid.scrollBy({
+          left: cardWidth,
+          behavior: "smooth"
+        });
+      }
+    }, 3000);
+  }
+
   function renderHorarios() {
     const selectedDate = dataInput.value;
     selectedTime = "";
@@ -109,7 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "time-btn";
-      button.textContent = hora;
+      button.innerHTML = `
+        <span class="time-hour">${hora}</span>
+        <span class="time-status">Disponível</span>
+      `;
 
       const isBooked = selectedDate
         ? localStorage.getItem(getBookedKey(selectedDate, hora))
@@ -117,12 +146,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!selectedDate) {
         button.disabled = true;
+        button.querySelector(".time-status").textContent = "Escolha a data";
       }
 
       if (isBooked) {
         button.disabled = true;
         button.classList.add("disabled");
-        button.textContent = `${hora} ocupado`;
+        button.querySelector(".time-status").textContent = "Ocupado";
       }
 
       button.addEventListener("click", () => {
@@ -136,6 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       timeGrid.appendChild(button);
     });
+
+    iniciarCarrosselHorarios();
   }
 
   dataInput.addEventListener("change", renderHorarios);
