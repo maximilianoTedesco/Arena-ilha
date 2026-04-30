@@ -451,3 +451,47 @@ h1 {
     linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.82)),
     url("assets/fundo-alvorada.jpg") center/cover no-repeat;
 }
+
+/* ===== CARROSSEL DE FUNDO DO AGENDAMENTO ===== */
+
+.booking-page {
+  position: relative;
+  overflow: hidden;
+  background: #111;
+}
+
+.booking-carousel {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 1.4s ease, transform 6s ease;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.booking-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(rgba(0,0,0,0.64), rgba(0,0,0,0.86)),
+    radial-gradient(circle at top, rgba(255,215,0,0.18), transparent 34%);
+}
+
+.booking-card {
+  position: relative;
+  z-index: 2;
+}
