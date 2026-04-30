@@ -4,9 +4,12 @@ const arenas = {
     logo: "assets/LOGO ARENA INTERSUL.png",
     whatsapp: "5551995766825",
     imagens: [
-      "assets/intersul-01.jpg",
-      "assets/intersul-02.jpg",
-      "assets/intersul-03.jpg"
+      "assets/intersul-01.jpeg",
+      "assets/intersul-02.jpeg",
+      "assets/intersul-03.jpeg",
+      "assets/intersul-04.jpeg",
+      "assets/intersul-05.jpeg",
+      "assets/intersul-06.jpeg"
     ]
   },
 
@@ -15,9 +18,12 @@ const arenas = {
     logo: "assets/LOGO ARENA ALVORADA.png",
     whatsapp: "5551995766825",
     imagens: [
-      "assets/alvorada-01.jpg",
-      "assets/alvorada-02.jpg",
-      "assets/alvorada-03.jpg"
+      "assets/alvorada-01.jpeg",
+      "assets/alvorada-02.jpeg",
+      "assets/alvorada-03.jpeg",
+      "assets/alvorada-04.jpeg",
+      "assets/alvorada-05.jpeg",
+      "assets/alvorada-06.jpeg"
     ]
   }
 };
