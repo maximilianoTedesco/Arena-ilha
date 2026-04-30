@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agendamento | Grupo Rodrigo Ilha</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="booking-page">
+    <section class="booking-card">
+      <a href="arenas.html" class="back-link top-back">← Trocar arena</a>
+
+      <div class="booking-header">
+        <img id="arenaLogo" src="" alt="Logo da arena" class="booking-logo" />
+        <span class="booking-label">Agendamento de futsal</span>
+        <h1 id="arenaTitle">Arena</h1>
+        <p>Escolha o dia, horário e preencha seus dados para confirmar.</p>
+      </div>
+
+      <form id="bookingForm" class="booking-form">
+        <label>
+          Nome completo
+          <input type="text" id="nome" placeholder="Seu nome" required />
+        </label>
+
+        <label>
+          WhatsApp
+          <input type="tel" id="whatsapp" placeholder="51999999999" required />
+        </label>
+
+        <label>
+          Data
+          <input type="date" id="data" required />
+        </label>
+
+        <div>
+          <span class="field-title">Horário disponível</span>
+          <div id="timeGrid" class="time-grid"></div>
+        </div>
+
+        <label>
+          Observação
+          <textarea id="observacao" rows="3" placeholder="Ex: jogo entre amigos, mensalista, etc."></textarea>
+        </label>
+
+        <button type="submit" class="btn booking-btn">Confirmar agendamento</button>
+      </form>
+
+      <div id="successBox" class="success-box hidden">
+        <h2>Horário selecionado!</h2>
+        <p id="successText"></p>
+        <a id="whatsLink" class="btn whatsapp-btn" target="_blank">Enviar pelo WhatsApp</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const arenas = {
+      intersul: {
+        nome: "Arena Intersul",
+        logo: "assets/LOGO ARENA INTERSUL.png",
+        whatsapp: "5551995766825"
+      },
+      alvorada: {
+        nome: "Arena Alvorada",
+        logo: "assets/LOGO ARENA ALVORADA.png",
+        whatsapp: "5551995766825"
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const arenaKey = params.get("arena") || "intersul";
+    const arena = arenas[arenaKey] || arenas.intersul;
+
+    const arenaTitle = document.getElementById("arenaTitle");
+    const arenaLogo = document.getElementById("arenaLogo");
+    const dataInput = document.getElementById("data");
+    const timeGrid = document.getElementById("timeGrid");
+    const form = document.getElementById("bookingForm");
+    const successBox = document.getElementById("successBox");
+    const successText = document.getElementById("successText");
+    const whatsLink = document.getElementById("whatsLink");
+
+    let selectedTime = "";
+
+    arenaTitle.textContent = arena.nome;
+    arenaLogo.src = arena.logo;
+    arenaLogo.alt = arena.nome;
+
+    const today = new Date();
+    dataInput.min = today.toISOString().split("T")[0];
+
+    const horarios = [
+      "08:00", "09:00", "10:00", "11:00",
+      "14:00", "15:00", "16:00", "17:00",
+      "18:00", "19:00", "20:00", "21:00", "22:00"
+    ];
+
+    function getBookedKey(date, time) {
+      return `arena_${arenaKey}_${date}_${time}`;
+    }
+
+    function renderHorarios() {
+      const selectedDate = dataInput.value;
+      selectedTime = "";
+      timeGrid.innerHTML = "";
+
+      horarios.forEach((hora) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "time-btn";
+        button.textContent = hora;
+
+        const isBooked = localStorage.getItem(getBookedKey(selectedDate, hora));
+
+        if (!selectedDate) {
+          button.disabled = true;
+        }
+
+        if (isBooked) {
+          button.disabled = true;
+          button.classList.add("disabled");
+          button.textContent = `${hora} indisponível`;
+        }
+
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".time-btn").forEach(btn => btn.classList.remove("active"));
+          button.classList.add("active");
+          selectedTime = hora;
+        });
+
+        timeGrid.appendChild(button);
+      });
+    }
+
+    dataInput.addEventListener("change", renderHorarios);
+    renderHorarios();
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const nome = document.getElementById("nome").value.trim();
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      const data = dataInput.value;
+      const observacao = document.getElementById("observacao").value.trim();
+
+      if (!selectedTime) {
+        alert("Escolha um horário disponível.");
+        return;
+      }
+
+      localStorage.setItem(getBookedKey(data, selectedTime), JSON.stringify({
+        arena: arena.nome,
+        nome,
+        whatsapp,
+        data,
+        horario: selectedTime,
+        observacao
+      }));
+
+      const mensagem = `Olá! Gostaria de confirmar um agendamento na ${arena.nome}.%0A%0ANome: ${nome}%0AWhatsApp: ${whatsapp}%0AData: ${data}%0AHorário: ${selectedTime}%0AObservação: ${observacao || "Sem observação"}`;
+
+      successText.innerHTML = `
+        <strong>${arena.nome}</strong><br>
+        ${data} às ${selectedTime}<br>
+        Cliente: ${nome}
+      `;
+
+      whatsLink.href = `https://wa.me/${arena.whatsapp}?text=${mensagem}`;
+
+      form.classList.add("hidden");
+      successBox.classList.remove("hidden");
+      successBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  </script>
+</body>
+</html>
