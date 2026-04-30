@@ -437,15 +437,6 @@ h1 {
     padding: 30px;
   }
 }
-@media (min-width: 520px) {
-  .time-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .booking-card {
-    padding: 30px;
-  }
-}
 
 /* ===== FUNDO PERSONALIZADO POR ARENA ===== */
 
