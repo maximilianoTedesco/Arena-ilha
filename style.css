@@ -154,7 +154,6 @@ h1 {
 
   object-fit: contain;
 
-  /* Isso aqui resolve o alinhamento visual */
   display: block;
 }
 
@@ -205,46 +204,13 @@ h1 {
   justify-content: center;
   position: relative;
   overflow: hidden;
-}
-
-.booking-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(0,0,0,0.62), rgba(0,0,0,0.78)),
-    radial-gradient(circle at top left, rgba(255,255,255,0.16), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(255,215,0,0.18), transparent 34%);
-  z-index: 0;
-}
-
-.booking-page::after {
-  content: "";
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  background: rgba(255, 215, 0, 0.13);
-  filter: blur(18px);
-  top: -80px;
-  right: -90px;
-  z-index: 0;
-}
-
-.theme-intersul .booking-page {
-  background:
-    linear-gradient(135deg, #061d14, #1f1f1f 52%, #101010);
-}
-
-.theme-alvorada .booking-page {
-  background:
-    linear-gradient(135deg, #071927, #1f1f1f 52%, #101010);
+  background: #111;
 }
 
 .booking-card {
   width: min(620px, 100%);
   position: relative;
-  z-index: 1;
+  z-index: 2;
   padding: 22px;
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.075);
@@ -346,45 +312,75 @@ h1 {
   color: rgba(255,255,255,0.38);
 }
 
+/* ===== CARROSSEL DE HORÁRIOS ===== */
+
 .time-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 11px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 4px 12px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.time-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .time-btn {
-  min-height: 54px;
-  border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 18px;
+  min-width: 138px;
+  min-height: 82px;
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 22px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.045));
+    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
   color: #fff;
-  font-weight: 950;
-  font-size: 0.98rem;
   cursor: pointer;
-  transition: 0.2s ease;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: 0.22s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 12px 26px rgba(0,0,0,0.22);
 }
 
 .time-btn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255,215,0,0.45);
+  transform: translateY(-2px);
+  border-color: rgba(255,215,0,0.48);
 }
 
 .time-btn.active {
-  background: linear-gradient(135deg, #ffd700, #f6b800);
+  background: linear-gradient(135deg, #ffd700, #f4b400);
   color: #1f1f1f;
   border-color: rgba(255,215,0,0.95);
   box-shadow:
-    0 12px 26px rgba(255,215,0,0.22),
-    inset 0 1px 0 rgba(255,255,255,0.45);
+    0 16px 34px rgba(255,215,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.48);
 }
 
 .time-btn.disabled,
 .time-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.36;
   cursor: not-allowed;
   transform: none;
+}
+
+.time-hour {
+  display: block;
+  font-size: 1.28rem;
+  font-weight: 950;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.time-status {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.78;
 }
 
 .booking-btn {
@@ -429,36 +425,12 @@ h1 {
 }
 
 @media (min-width: 520px) {
-  .time-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .booking-card {
     padding: 30px;
   }
 }
 
-/* ===== FUNDO PERSONALIZADO POR ARENA ===== */
-
-.theme-intersul .booking-page {
-  background:
-    linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.82)),
-    url("assets/fundo-intersul.jpg") center/cover no-repeat;
-}
-
-.theme-alvorada .booking-page {
-  background:
-    linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.82)),
-    url("assets/fundo-alvorada.jpg") center/cover no-repeat;
-}
-
 /* ===== CARROSSEL DE FUNDO DO AGENDAMENTO ===== */
-
-.booking-page {
-  position: relative;
-  overflow: hidden;
-  background: #111;
-}
 
 .booking-carousel {
   position: absolute;
@@ -489,9 +461,4 @@ h1 {
   background:
     linear-gradient(rgba(0,0,0,0.64), rgba(0,0,0,0.86)),
     radial-gradient(circle at top, rgba(255,215,0,0.18), transparent 34%);
-}
-
-.booking-card {
-  position: relative;
-  z-index: 2;
 }
