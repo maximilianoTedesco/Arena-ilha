@@ -9,8 +9,9 @@
 
 <body id="bookingBody">
   <main class="booking-page">
-  <div class="booking-carousel" id="bookingCarousel"></div>
-  <div class="booking-overlay"></div>
+    <div class="booking-carousel" id="bookingCarousel"></div>
+    <div class="booking-overlay"></div>
+  
     <section class="booking-card">
       <a href="arenas.html" class="back-link top-back">← Trocar arena</a>
 
@@ -32,15 +33,22 @@
           <input type="tel" id="whatsapp" placeholder="51999999999" required />
         </label>
 
-        <label>
-          Data
-          <input type="date" id="data" required />
-        </label>
+        <section class="schedule-panel">
+  <div class="schedule-panel-header">
+    <span>Escolha seu horário</span>
+    <small>Arraste para o lado ou aguarde</small>
+  </div>
 
-        <div>
-          <span class="field-title">Horário disponível</span>
-          <div id="timeGrid" class="time-grid"></div>
-        </div>
+      <label>
+        Data
+        <input type="date" id="data" required />
+      </label>
+    
+      <div>
+        <span class="field-title">Horários disponíveis</span>
+        <div id="timeGrid" class="time-grid"></div>
+      </div>
+    </section>
 
         <label>
           Observação
