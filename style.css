@@ -502,44 +502,6 @@ h1 {
   min-width: 0;
 }
 
-.time-grid {
-  display: flex !important;
-  gap: 12px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding: 4px 2px 12px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.time-grid::-webkit-scrollbar {
-  display: none;
-}
-
-.time-btn {
-  min-width: 136px;
-  min-height: 82px;
-  flex: 0 0 auto;
-  scroll-snap-align: center;
-  border-radius: 22px;
-}
-
-.time-hour {
-  display: block;
-  font-size: 1.28rem;
-  font-weight: 950;
-  margin-bottom: 8px;
-}
-
-.time-status {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  opacity: 0.78;
-}
-
 @media (max-width: 480px) {
   .booking-page {
     padding: 12px;
