@@ -710,3 +710,25 @@ h1 {
     font-size: 0.62rem;
   }
 }
+
+.closed-message {
+  width: 100%;
+  padding: 18px;
+  border-radius: 18px;
+  text-align: center;
+  font-weight: 800;
+  color: rgba(255,255,255,0.88);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+}
+
+.churrasqueira-btn {
+  margin-top: 14px;
+  background: #25d366;
+  color: #fff;
+}
+
+.churrasqueira-btn:hover {
+  background: var(--gold);
+  color: var(--dark);
+}
