@@ -3,6 +3,7 @@ const arenas = {
     nome: "Arena Intersul",
     logo: "assets/LOGO ARENA INTERSUL.png",
     whatsapp: "5551995766825",
+    fechadoDomingo: true,
     imagens: [
       "assets/intersul-01.jpeg",
       "assets/intersul-02.jpeg",
@@ -12,11 +13,11 @@ const arenas = {
       "assets/intersul-06.jpeg"
     ]
   },
-
   alvorada: {
     nome: "Arena Alvorada",
     logo: "assets/LOGO ARENA ALVORADA.png",
     whatsapp: "5551995766825",
+    fechadoDomingo: false,
     imagens: [
       "assets/alvorada-01.jpeg",
       "assets/alvorada-02.jpeg",
@@ -30,46 +31,16 @@ const arenas = {
 
 function iniciarCarrossel(imagens) {
   const carousel = document.getElementById("bookingCarousel");
-  const galleryTrack = document.getElementById("arenaGalleryTrack");
-  
   if (!carousel || !imagens || imagens.length === 0) return;
 
   carousel.innerHTML = "";
-
-  if (galleryTrack) {
-  galleryTrack.innerHTML = "";
-
-  imagens.forEach((imagem) => {
-    const item = document.createElement("div");
-    item.className = "arena-gallery-item";
-    item.style.backgroundImage = `url('${imagem}')`;
-    galleryTrack.appendChild(item);
-  });
-
-  setInterval(() => {
-    const item = galleryTrack.querySelector(".arena-gallery-item");
-    if (!item) return;
-
-    const itemWidth = item.offsetWidth + 12;
-    const chegouNoFim =
-      galleryTrack.scrollLeft + galleryTrack.clientWidth >= galleryTrack.scrollWidth - 5;
-
-    if (chegouNoFim) {
-      galleryTrack.scrollTo({ left: 0, behavior: "smooth" });
-    } else {
-      galleryTrack.scrollBy({ left: itemWidth, behavior: "smooth" });
-    }
-  }, 3000);
-}
 
   imagens.forEach((imagem, index) => {
     const slide = document.createElement("div");
     slide.className = "carousel-slide";
     slide.style.backgroundImage = `url('${imagem}')`;
 
-    if (index === 0) {
-      slide.classList.add("active");
-    }
+    if (index === 0) slide.classList.add("active");
 
     carousel.appendChild(slide);
   });
@@ -79,9 +50,7 @@ function iniciarCarrossel(imagens) {
 
   setInterval(() => {
     slides[currentSlide].classList.remove("active");
-
     currentSlide = (currentSlide + 1) % slides.length;
-
     slides[currentSlide].classList.add("active");
   }, 4500);
 }
@@ -106,23 +75,51 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedTime = "";
   let autoScrollHorarios;
 
-  if (bookingBody) {
-    bookingBody.classList.add(`theme-${arenaKey}`);
-  }
+  if (bookingBody) bookingBody.classList.add(`theme-${arenaKey}`);
 
   arenaTitle.textContent = arena.nome;
   arenaLogo.src = arena.logo;
   arenaLogo.alt = arena.nome;
+
   iniciarCarrossel(arena.imagens);
 
   const today = new Date();
   dataInput.min = today.toISOString().split("T")[0];
 
-  const horarios = [
-    "08:00", "09:00", "10:00", "11:00",
-    "14:00", "15:00", "16:00", "17:00",
-    "18:00", "19:00", "20:00", "21:00", "22:00"
-  ];
+  function gerarHorarios(inicio, fim) {
+    const horarios = [];
+
+    for (let hora = inicio; hora <= fim; hora++) {
+      horarios.push(`${String(hora).padStart(2, "0")}:00`);
+    }
+
+    return horarios;
+  }
+
+  function obterHorariosPorArenaEData(dataSelecionada) {
+    if (!dataSelecionada) return [];
+
+    const data = new Date(`${dataSelecionada}T12:00:00`);
+    const diaSemana = data.getDay();
+
+    const domingo = diaSemana === 0;
+    const sabado = diaSemana === 6;
+    const segundaASexta = diaSemana >= 1 && diaSemana <= 5;
+
+    if (arenaKey === "alvorada") {
+      if (segundaASexta) return gerarHorarios(19, 23);
+      if (sabado) return gerarHorarios(14, 23);
+      if (domingo) return gerarHorarios(17, 23);
+    }
+
+    if (arenaKey === "intersul") {
+      if (segundaASexta) return gerarHorarios(19, 23);
+      if (sabado) return gerarHorarios(18, 23);
+      if (domingo) return [];
+    }
+
+    return [];
+  }
 
   function getBookedKey(date, time) {
     return `arena_${arenaKey}_${date}_${time}`;
@@ -140,17 +137,43 @@ document.addEventListener("DOMContentLoaded", () => {
         timeGrid.scrollLeft + timeGrid.clientWidth >= timeGrid.scrollWidth - 5;
 
       if (chegouNoFim) {
-        timeGrid.scrollTo({
-          left: 0,
-          behavior: "smooth"
-        });
+        timeGrid.scrollTo({ left: 0, behavior: "smooth" });
       } else {
-        timeGrid.scrollBy({
-          left: cardWidth,
-          behavior: "smooth"
-        });
+        timeGrid.scrollBy({ left: cardWidth, behavior: "smooth" });
       }
     }, 3000);
+  }
+
+  function criarBotaoHorario(hora, selectedDate) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "time-btn";
+
+    button.innerHTML = `
+      <span class="time-hour">${hora}</span>
+      <span class="time-status">Disponível</span>
+    `;
+
+    const isBooked = selectedDate
+      ? localStorage.getItem(getBookedKey(selectedDate, hora))
+      : null;
+
+    if (isBooked) {
+      button.disabled = true;
+      button.classList.add("disabled");
+      button.querySelector(".time-status").textContent = "Ocupado";
+    }
+
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".time-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+      selectedTime = hora;
+    });
+
+    return button;
   }
 
   function renderHorarios() {
@@ -158,40 +181,28 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedTime = "";
     timeGrid.innerHTML = "";
 
-    horarios.forEach((hora) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "time-btn";
-      button.innerHTML = `
-        <span class="time-hour">${hora}</span>
-        <span class="time-status">Disponível</span>
+    if (!selectedDate) {
+      timeGrid.innerHTML = `
+        <div class="closed-message">
+          Escolha uma data para ver os horários disponíveis.
+        </div>
       `;
+      return;
+    }
 
-      const isBooked = selectedDate
-        ? localStorage.getItem(getBookedKey(selectedDate, hora))
-        : null;
+    const horarios = obterHorariosPorArenaEData(selectedDate);
 
-      if (!selectedDate) {
-        button.disabled = true;
-        button.querySelector(".time-status").textContent = "Escolha a data";
-      }
+    if (horarios.length === 0) {
+      timeGrid.innerHTML = `
+        <div class="closed-message">
+          Esta arena não possui horários disponíveis nesta data.
+        </div>
+      `;
+      return;
+    }
 
-      if (isBooked) {
-        button.disabled = true;
-        button.classList.add("disabled");
-        button.querySelector(".time-status").textContent = "Ocupado";
-      }
-
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".time-btn").forEach((btn) => {
-          btn.classList.remove("active");
-        });
-
-        button.classList.add("active");
-        selectedTime = hora;
-      });
-
-      timeGrid.appendChild(button);
+    horarios.forEach((hora) => {
+      timeGrid.appendChild(criarBotaoHorario(hora, selectedDate));
     });
 
     iniciarCarrosselHorarios();
@@ -242,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     successText.innerHTML = `
-      <strong>${arena.nome}</strong><br>
+      ${arena.nome}<br>
       ${data} às ${selectedTime}<br>
       Cliente: ${nome}
     `;
