@@ -3,7 +3,6 @@ const arenas = {
     nome: "Arena Intersul",
     logo: "assets/LOGO ARENA INTERSUL.png",
     whatsapp: "5551995766825",
-    fechadoDomingo: true,
     imagens: [
       "assets/intersul-01.jpeg",
       "assets/intersul-02.jpeg",
@@ -13,11 +12,11 @@ const arenas = {
       "assets/intersul-06.jpeg"
     ]
   },
+
   alvorada: {
     nome: "Arena Alvorada",
     logo: "assets/LOGO ARENA ALVORADA.png",
     whatsapp: "5551995766825",
-    fechadoDomingo: false,
     imagens: [
       "assets/alvorada-01.jpeg",
       "assets/alvorada-02.jpeg",
@@ -106,13 +105,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const sabado = diaSemana === 6;
     const segundaASexta = diaSemana >= 1 && diaSemana <= 5;
 
-    if (arenaKey === "alvorada") {
+    if (arenaKey === "intersul") {
       if (segundaASexta) return gerarHorarios(19, 23);
       if (sabado) return gerarHorarios(14, 23);
       if (domingo) return gerarHorarios(17, 23);
     }
 
-    if (arenaKey === "intersul") {
+    if (arenaKey === "alvorada") {
       if (segundaASexta) return gerarHorarios(19, 23);
       if (sabado) return gerarHorarios(18, 23);
       if (domingo) return [];
