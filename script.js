@@ -54,6 +54,24 @@ function iniciarCarrossel(imagens) {
   }, 4500);
 }
 
+function iniciarGaleriaArena(imagens) {
+  const galleryTrack = document.getElementById("arenaGalleryTrack");
+  if (!galleryTrack || !imagens || imagens.length === 0) return;
+
+  galleryTrack.innerHTML = "";
+
+  imagens.forEach((imagem, index) => {
+    const item = document.createElement("div");
+    item.className = "arena-gallery-item";
+
+    item.innerHTML = `
+      <img src="${imagem}" alt="Foto da arena ${index + 1}" loading="lazy">
+    `;
+
+    galleryTrack.appendChild(item);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const bookingBody = document.getElementById("bookingBody");
   const arenaTitle = document.getElementById("arenaTitle");
@@ -81,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   arenaLogo.alt = arena.nome;
 
   iniciarCarrossel(arena.imagens);
+  iniciarGaleriaArena(arena.imagens);
 
   const today = new Date();
   dataInput.min = today.toISOString().split("T")[0];
