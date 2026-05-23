@@ -2,7 +2,7 @@ const arenas = {
   intersul: {
     nome: "Arena Intersul",
     logo: "assets/LOGO ARENA INTERSUL.png",
-    whatsapp: "5551995766825",
+    whatsapp: "5551984610327",
     imagens: [
       "assets/intersul-01.jpeg",
       "assets/intersul-02.jpeg",
@@ -16,7 +16,7 @@ const arenas = {
   alvorada: {
     nome: "Arena Alvorada",
     logo: "assets/LOGO ARENA ALVORADA.png",
-    whatsapp: "5551995766825",
+    whatsapp: "5551984610327",
     imagens: [
       "assets/alvorada-01.jpeg",
       "assets/alvorada-02.jpeg",
