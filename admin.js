@@ -8,16 +8,27 @@ const arenaSelect = document.getElementById("arenaSelect");
 const horariosList = document.getElementById("horariosList");
 
 const salvarHorarioBtn = document.getElementById("salvarHorarioBtn");
-const salvarDescontoBtn = document.getElementById("salvarDescontoBtn");
 const salvarBloqueioBtn = document.getElementById("salvarBloqueioBtn");
+
+const promoArena = document.getElementById("promoArena");
+const promoData = document.getElementById("promoData");
+const buscarHorariosPromoBtn = document.getElementById("buscarHorariosPromoBtn");
+const promoHorariosList = document.getElementById("promoHorariosList");
+const promoFormBox = document.getElementById("promoFormBox");
+const promoHorarioSelecionado = document.getElementById("promoHorarioSelecionado");
+const salvarPromoSelecionadaBtn = document.getElementById("salvarPromoSelecionadaBtn");
+
+let horarioPromoSelecionado = "";
 
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
 arenaSelect.addEventListener("change", carregarTudo);
 
 salvarHorarioBtn.addEventListener("click", salvarHorario);
-salvarDescontoBtn.addEventListener("click", salvarDesconto);
 salvarBloqueioBtn.addEventListener("click", salvarBloqueio);
+
+buscarHorariosPromoBtn.addEventListener("click", carregarHorariosPromocao);
+salvarPromoSelecionadaBtn.addEventListener("click", salvarPromocaoSelecionada);
 
 iniciarAdmin();
 
@@ -137,16 +148,148 @@ async function excluirHorario(id) {
   carregarHorarios();
 }
 
-async function salvarDesconto() {
-  const arena = document.getElementById("descontoArena").value;
-  const data = document.getElementById("descontoData").value;
-  const horario = document.getElementById("descontoHorario").value;
-  const valorNormal = document.getElementById("valorNormal").value;
-  const valorPromocional = document.getElementById("valorPromocional").value;
-  const descricao = document.getElementById("descricaoDesconto").value;
+async function carregarHorariosPromocao() {
+  const arena = promoArena.value;
+  const dataSelecionada = promoData.value;
 
-  if (!data || !horario || !valorPromocional) {
-    alert("Preencha data, horário e valor promocional.");
+  horarioPromoSelecionado = "";
+  promoFormBox.classList.add("hidden");
+  promoHorariosList.innerHTML = "";
+
+  if (!arena || !dataSelecionada) {
+    alert("Selecione a arena e a data.");
+    return;
+  }
+
+  promoHorariosList.innerHTML = `<p>Carregando horários...</p>`;
+
+  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
+  const diaSemana = dataObj.getDay();
+
+  const { data: regras, error } = await supabaseClient
+    .from("arena_horarios")
+    .select("*")
+    .eq("arena_slug", arena)
+    .eq("dia_semana", diaSemana)
+    .eq("ativo", true);
+
+  if (error) {
+    console.error(error);
+    promoHorariosList.innerHTML = `<p>Erro ao carregar horários.</p>`;
+    return;
+  }
+
+  if (!regras || regras.length === 0) {
+    promoHorariosList.innerHTML = `<p>Não há horários cadastrados para esta arena nesta data.</p>`;
+    return;
+  }
+
+  let horarios = [];
+
+  regras.forEach((regra) => {
+    const inicio = Number(regra.hora_inicio.slice(0, 2));
+    const fim = Number(regra.hora_fim.slice(0, 2));
+
+    for (let hora = inicio; hora <= fim; hora++) {
+      horarios.push(`${String(hora).padStart(2, "0")}:00`);
+    }
+  });
+
+  horarios = [...new Set(horarios)].sort();
+
+  const { data: agendamentos } = await supabaseClient
+    .from("agendamentos")
+    .select("horario")
+    .eq("arena_slug", arena)
+    .eq("data", dataSelecionada)
+    .eq("status", "confirmado");
+
+  const { data: bloqueios } = await supabaseClient
+    .from("arena_bloqueios")
+    .select("horario")
+    .eq("arena_slug", arena)
+    .eq("data", dataSelecionada);
+
+  const { data: descontos } = await supabaseClient
+    .from("arena_descontos")
+    .select("*")
+    .eq("arena_slug", arena)
+    .eq("data", dataSelecionada)
+    .eq("ativo", true);
+
+  const horariosOcupados = (agendamentos || []).map((item) =>
+    item.horario.slice(0, 5)
+  );
+
+  const horariosBloqueados = (bloqueios || []).map((item) =>
+    item.horario.slice(0, 5)
+  );
+
+  const horariosComPromocao = (descontos || []).map((item) =>
+    item.horario.slice(0, 5)
+  );
+
+  promoHorariosList.innerHTML = "";
+
+  horarios.forEach((horario) => {
+    const ocupado = horariosOcupados.includes(horario);
+    const bloqueado = horariosBloqueados.includes(horario);
+    const temPromocao = horariosComPromocao.includes(horario);
+
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "promo-horario-item";
+
+    if (ocupado || bloqueado) {
+      item.classList.add("ocupado");
+      item.disabled = true;
+      item.innerHTML = `
+        <strong>${horario}</strong>
+        <span>${ocupado ? "Ocupado" : "Bloqueado"}</span>
+      `;
+    } else {
+      item.classList.add("livre");
+
+      if (temPromocao) {
+        item.classList.add("com-promocao");
+      }
+
+      item.innerHTML = `
+        <strong>${horario}</strong>
+        <span>${temPromocao ? "Já tem promoção" : "Livre"}</span>
+      `;
+
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".promo-horario-item").forEach((btn) => {
+          btn.classList.remove("selecionado");
+        });
+
+        item.classList.add("selecionado");
+        horarioPromoSelecionado = horario;
+
+        promoHorarioSelecionado.textContent = `Promoção para ${horario}`;
+        promoFormBox.classList.remove("hidden");
+      });
+    }
+
+    promoHorariosList.appendChild(item);
+  });
+}
+
+async function salvarPromocaoSelecionada() {
+  const arena = promoArena.value;
+  const dataSelecionada = promoData.value;
+  const valorNormal = document.getElementById("promoValorNormal").value;
+  const valorPromocional = document.getElementById("promoValorPromocional").value;
+  const descricao = document.getElementById("promoDescricao").value.trim();
+
+  if (!horarioPromoSelecionado) {
+    alert("Selecione um horário livre.");
+    return;
+  }
+
+  if (!valorPromocional) {
+    alert("Informe o valor promocional.");
     return;
   }
 
@@ -154,20 +297,31 @@ async function salvarDesconto() {
     .from("arena_descontos")
     .insert({
       arena_slug: arena,
-      data,
-      horario,
+      data: dataSelecionada,
+      horario: horarioPromoSelecionado,
       valor_normal: valorNormal || null,
       valor_promocional: valorPromocional,
-      descricao,
+      descricao: descricao || "Condição especial",
       ativo: true
     });
 
   if (error) {
-    alert("Erro ao salvar desconto.");
+    console.error(error);
+    alert("Erro ao salvar promoção.");
     return;
   }
 
-  carregarDescontos();
+  alert("Promoção criada com sucesso!");
+
+  document.getElementById("promoValorNormal").value = "";
+  document.getElementById("promoValorPromocional").value = "";
+  document.getElementById("promoDescricao").value = "";
+
+  horarioPromoSelecionado = "";
+  promoFormBox.classList.add("hidden");
+
+  await carregarHorariosPromocao();
+  await carregarDescontos();
 }
 
 async function carregarDescontos() {
@@ -179,23 +333,30 @@ async function carregarDescontos() {
   const descontosList = document.getElementById("descontosList");
 
   if (error) {
-    descontosList.innerHTML = "Erro ao carregar descontos.";
+    descontosList.innerHTML = "Erro ao carregar promoções.";
     return;
   }
 
-  descontosList.innerHTML = data.map(item => `
-    <div class="admin-item">
-      <strong>${item.arena_slug}</strong><br>
-      ${formatarData(item.data)} - ${formatarHora(item.horario)}<br>
-      De R$ ${item.valor_normal || "-"} por R$ ${item.valor_promocional}<br>
-      ${item.descricao || ""}
-      <button onclick="excluirDesconto('${item.id}')">Excluir</button>
-    </div>
-  `).join("");
+  descontosList.innerHTML = `
+    <h3 style="margin-top: 22px;">Promoções cadastradas</h3>
+    ${
+      data.length
+        ? data.map(item => `
+          <div class="admin-item">
+            <strong>${nomeArena(item.arena_slug)}</strong><br>
+            ${formatarData(item.data)} - ${formatarHora(item.horario)}<br>
+            De R$ ${item.valor_normal || "-"} por R$ ${item.valor_promocional}<br>
+            ${item.descricao || ""}
+            <button onclick="excluirDesconto('${item.id}')">Excluir</button>
+          </div>
+        `).join("")
+        : `<p>Nenhuma promoção cadastrada.</p>`
+    }
+  `;
 }
 
 async function excluirDesconto(id) {
-  const confirmar = confirm("Deseja excluir este desconto?");
+  const confirmar = confirm("Deseja excluir esta promoção?");
   if (!confirmar) return;
 
   await supabaseClient
@@ -204,6 +365,10 @@ async function excluirDesconto(id) {
     .eq("id", id);
 
   carregarDescontos();
+
+  if (promoData.value) {
+    carregarHorariosPromocao();
+  }
 }
 
 async function salvarBloqueio() {
@@ -232,6 +397,10 @@ async function salvarBloqueio() {
   }
 
   carregarBloqueios();
+
+  if (promoData.value) {
+    carregarHorariosPromocao();
+  }
 }
 
 async function carregarBloqueios() {
@@ -249,7 +418,7 @@ async function carregarBloqueios() {
 
   bloqueiosList.innerHTML = data.map(item => `
     <div class="admin-item">
-      <strong>${item.arena_slug}</strong><br>
+      <strong>${nomeArena(item.arena_slug)}</strong><br>
       ${formatarData(item.data)} - ${formatarHora(item.horario)}<br>
       ${item.motivo || ""}
       <button onclick="excluirBloqueio('${item.id}')">Liberar</button>
@@ -267,6 +436,10 @@ async function excluirBloqueio(id) {
     .eq("id", id);
 
   carregarBloqueios();
+
+  if (promoData.value) {
+    carregarHorariosPromocao();
+  }
 }
 
 async function carregarAgendamentos() {
@@ -285,7 +458,7 @@ async function carregarAgendamentos() {
   agendamentosList.innerHTML = data.map(item => `
     <div class="admin-item">
       <strong>${item.nome}</strong><br>
-      ${item.arena_slug}<br>
+      ${nomeArena(item.arena_slug)}<br>
       ${formatarData(item.data)} - ${formatarHora(item.horario)}<br>
       WhatsApp: ${item.whatsapp}<br>
       Status: ${item.status}
@@ -304,6 +477,10 @@ async function cancelarAgendamento(id) {
     .eq("id", id);
 
   carregarAgendamentos();
+
+  if (promoData.value) {
+    carregarHorariosPromocao();
+  }
 }
 
 function nomeDia(numero) {
@@ -318,6 +495,15 @@ function nomeDia(numero) {
   };
 
   return dias[numero] || "-";
+}
+
+function nomeArena(slug) {
+  const arenas = {
+    intersul: "Arena Intersul",
+    alvorada: "Arena Alvorada"
+  };
+
+  return arenas[slug] || slug;
 }
 
 function formatarHora(hora) {
