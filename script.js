@@ -169,6 +169,13 @@ document.addEventListener("DOMContentLoaded", () => {
     .eq("arena_slug", arenaSlug)
     .eq("data", dataSelecionada);
 
+  const { data: bloqueiosRecorrentes } = await supabaseClient
+    .from("arena_bloqueios_recorrentes")
+    .select("horario")
+    .eq("arena_slug", arenaSlug)
+    .eq("dia_semana", diaSemana)
+    .eq("ativo", true);
+
   const { data: agendamentos } = await supabaseClient
     .from("agendamentos")
     .select("horario")
@@ -183,9 +190,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .eq("data", dataSelecionada)
     .eq("ativo", true);
 
-  const horariosBloqueados = (bloqueios || []).map((item) =>
-    item.horario.slice(0, 5)
-  );
+  const horariosBloqueados = [
+    ...(bloqueios || []).map((item) => item.horario.slice(0, 5)),
+    ...(bloqueiosRecorrentes || []).map((item) => item.horario.slice(0, 5))
+  ];
 
   const horariosOcupados = (agendamentos || []).map((item) =>
     item.horario.slice(0, 5)
