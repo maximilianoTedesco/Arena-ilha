@@ -135,57 +135,102 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function buscarHorariosDaArena(arenaSlug, dataSelecionada) {
-    const dataObj = new Date(`${dataSelecionada}T12:00:00`);
-    const diaSemana = dataObj.getDay();
+  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
+  const diaSemana = dataObj.getDay();
 
-    const { data: regras, error } = await supabaseClient
-      .from("arena_horarios")
-      .select("*")
-      .eq("arena_slug", arenaSlug)
-      .eq("dia_semana", diaSemana)
-      .eq("ativo", true);
+  const { data: regras, error } = await supabaseClient
+    .from("arena_horarios")
+    .select("*")
+    .eq("arena_slug", arenaSlug)
+    .eq("dia_semana", diaSemana)
+    .eq("ativo", true);
 
-    if (error) {
-      console.error("Erro ao buscar horários:", error);
-      return [];
+  if (error) {
+    console.error("Erro ao buscar horários:", error);
+    return [];
+  }
+
+  let horariosGerados = [];
+
+  regras.forEach((regra) => {
+    const inicio = Number(regra.hora_inicio.slice(0, 2));
+    const fim = Number(regra.hora_fim.slice(0, 2));
+
+    for (let hora = inicio; hora <= fim; hora++) {
+      horariosGerados.push(`${String(hora).padStart(2, "0")}:00`);
+    }
+  });
+
+  horariosGerados = [...new Set(horariosGerados)].sort();
+
+  const { data: bloqueios } = await supabaseClient
+    .from("arena_bloqueios")
+    .select("horario")
+    .eq("arena_slug", arenaSlug)
+    .eq("data", dataSelecionada);
+
+  const { data: agendamentos } = await supabaseClient
+    .from("agendamentos")
+    .select("horario")
+    .eq("arena_slug", arenaSlug)
+    .eq("data", dataSelecionada)
+    .eq("status", "confirmado");
+
+  const { data: descontos } = await supabaseClient
+    .from("arena_descontos")
+    .select("*")
+    .eq("arena_slug", arenaSlug)
+    .eq("data", dataSelecionada)
+    .eq("ativo", true);
+
+  const horariosBloqueados = (bloqueios || []).map((item) =>
+    item.horario.slice(0, 5)
+  );
+
+  const horariosOcupados = (agendamentos || []).map((item) =>
+    item.horario.slice(0, 5)
+  );
+
+  return horariosGerados.map((hora) => {
+    const desconto = (descontos || []).find(
+      (item) => item.horario.slice(0, 5) === hora
+    );
+
+    if (horariosOcupados.includes(hora)) {
+      return {
+        hora,
+        status: "ocupado",
+        texto: "Reservado",
+        desconto: null
+      };
     }
 
-    let horariosGerados = [];
+    if (horariosBloqueados.includes(hora)) {
+      return {
+        hora,
+        status: "bloqueado",
+        texto: "Bloqueado",
+        desconto: null
+      };
+    }
 
-    regras.forEach((regra) => {
-      const inicio = Number(regra.hora_inicio.slice(0, 2));
-      const fim = Number(regra.hora_fim.slice(0, 2));
+    if (desconto) {
+      return {
+        hora,
+        status: "promocao",
+        texto: `Promoção R$ ${desconto.valor_promocional}`,
+        desconto
+      };
+    }
 
-      for (let hora = inicio; hora <= fim; hora++) {
-        horariosGerados.push(`${String(hora).padStart(2, "0")}:00`);
-      }
-    });
-
-    const { data: bloqueios } = await supabaseClient
-      .from("arena_bloqueios")
-      .select("horario")
-      .eq("arena_slug", arenaSlug)
-      .eq("data", dataSelecionada);
-
-    const { data: agendamentos } = await supabaseClient
-      .from("agendamentos")
-      .select("horario")
-      .eq("arena_slug", arenaSlug)
-      .eq("data", dataSelecionada)
-      .eq("status", "confirmado");
-
-    const horariosBloqueados = (bloqueios || []).map((item) =>
-      item.horario.slice(0, 5)
-    );
-
-    const horariosOcupados = (agendamentos || []).map((item) =>
-      item.horario.slice(0, 5)
-    );
-
-    return horariosGerados.filter((hora) => {
-      return !horariosBloqueados.includes(hora) && !horariosOcupados.includes(hora);
-    });
-  }
+    return {
+      hora,
+      status: "livre",
+      texto: "Disponível",
+      desconto: null
+    };
+  });
+}
 
   async function buscarDesconto(arenaSlug, dataSelecionada, horario) {
     const { data, error } = await supabaseClient
@@ -205,36 +250,33 @@ document.addEventListener("DOMContentLoaded", () => {
     return data;
   }
 
-  async function criarBotaoHorario(hora, selectedDate) {
-    const desconto = await buscarDesconto(arenaKey, selectedDate, hora);
+  function criarBotaoHorario(itemHorario) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `time-btn ${itemHorario.status}`;
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "time-btn";
+  button.innerHTML = `
+    <span class="time-hour">${itemHorario.hora}</span>
+    <span class="time-status">${itemHorario.texto}</span>
+  `;
 
-    button.innerHTML = `
-      <span class="time-hour">${hora}</span>
-      <span class="time-status">
-        ${desconto ? `Promoção R$ ${desconto.valor_promocional}` : "Disponível"}
-      </span>
-    `;
-
-    if (desconto) {
-      button.classList.add("has-discount");
-    }
-
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".time-btn").forEach((btn) => {
-        btn.classList.remove("active");
-      });
-
-      button.classList.add("active");
-      selectedTime = hora;
-      selectedDiscount = desconto;
-    });
-
+  if (itemHorario.status === "ocupado" || itemHorario.status === "bloqueado") {
+    button.disabled = true;
     return button;
   }
+
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".time-btn").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+    selectedTime = itemHorario.hora;
+    selectedDiscount = itemHorario.desconto;
+  });
+
+  return button;
+}
 
   async function renderHorarios() {
     const selectedDate = dataInput.value;
@@ -272,8 +314,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    for (const hora of horarios) {
-      const botao = await criarBotaoHorario(hora, selectedDate);
+    for (const itemHorario of horarios) {
+      const botao = criarBotaoHorario(itemHorario);
       timeGrid.appendChild(botao);
     }
 
