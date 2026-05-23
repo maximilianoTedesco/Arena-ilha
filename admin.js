@@ -3,7 +3,6 @@ const adminPanel = document.getElementById("adminPanel");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const loginMessage = document.getElementById("loginMessage");
-const reservaRecorrenteBtn = document.getElementById("reservaRecorrenteBtn");
 
 const adminArena = document.getElementById("adminArena");
 const adminData = document.getElementById("adminData");
@@ -15,6 +14,7 @@ const horarioSelecionadoTitulo = document.getElementById("horarioSelecionadoTitu
 
 const abrirReservaBtn = document.getElementById("abrirReservaBtn");
 const abrirPromocaoBtn = document.getElementById("abrirPromocaoBtn");
+const reservaRecorrenteBtn = document.getElementById("reservaRecorrenteBtn");
 const desmarcarHorarioBtn = document.getElementById("desmarcarHorarioBtn");
 
 const reservaBox = document.getElementById("reservaBox");
@@ -36,11 +36,11 @@ buscarAgendaBtn.addEventListener("click", carregarAgenda);
 
 abrirReservaBtn.addEventListener("click", mostrarFormReserva);
 abrirPromocaoBtn.addEventListener("click", mostrarFormPromocao);
+reservaRecorrenteBtn.addEventListener("click", criarReservaRecorrente);
 desmarcarHorarioBtn.addEventListener("click", desmarcarHorario);
 
 salvarReservaBtn.addEventListener("click", salvarReserva);
 salvarPromocaoBtn.addEventListener("click", salvarPromocao);
-reservaRecorrenteBtn.addEventListener("click", criarReservaRecorrente);
 
 iniciarAdmin();
 
@@ -114,6 +114,9 @@ async function carregarAgenda() {
     return;
   }
 
+  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
+  const diaSemana = dataObj.getDay();
+
   const { data: agendamentos } = await supabaseClient
     .from("agendamentos")
     .select("*")
@@ -126,15 +129,13 @@ async function carregarAgenda() {
     .select("*")
     .eq("arena_slug", arena)
     .eq("data", dataSelecionada);
-  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
-const diaSemana = dataObj.getDay();
 
-const { data: bloqueiosRecorrentes } = await supabaseClient
-  .from("arena_bloqueios_recorrentes")
-  .select("*")
-  .eq("arena_slug", arena)
-  .eq("dia_semana", diaSemana)
-  .eq("ativo", true);
+  const { data: bloqueiosRecorrentes } = await supabaseClient
+    .from("arena_bloqueios_recorrentes")
+    .select("*")
+    .eq("arena_slug", arena)
+    .eq("dia_semana", diaSemana)
+    .eq("ativo", true);
 
   const { data: descontos } = await supabaseClient
     .from("arena_descontos")
@@ -153,7 +154,7 @@ const { data: bloqueiosRecorrentes } = await supabaseClient
     const bloqueio = (bloqueios || []).find(
       item => formatarHora(item.horario) === horario
     );
-    
+
     const bloqueioRecorrente = (bloqueiosRecorrentes || []).find(
       item => formatarHora(item.horario) === horario
     );
@@ -173,11 +174,14 @@ const { data: bloqueiosRecorrentes } = await supabaseClient
       status = "ocupado";
       texto = `Reservado: ${agendamento.nome}`;
       card.classList.add("ocupado");
-    } else if (bloqueio || bloqueioRecorrente) {
-      status = bloqueioRecorrente ? "recorrente" : "bloqueado";
-      texto = bloqueioRecorrente ? "Reserva recorrente" : "Bloqueado";
+    } else if (bloqueioRecorrente) {
+      status = "recorrente";
+      texto = "Reserva recorrente";
+      card.classList.add("recorrente");
+    } else if (bloqueio) {
+      status = "bloqueado";
+      texto = "Bloqueado";
       card.classList.add("ocupado");
-    }
     } else if (desconto) {
       status = "promocao";
       texto = `Promoção R$ ${desconto.valor_promocional}`;
@@ -202,9 +206,8 @@ const { data: bloqueiosRecorrentes } = await supabaseClient
       statusSelecionado = status;
       agendamentoSelecionadoId = agendamento ? agendamento.id : null;
       bloqueioSelecionadoId = bloqueio ? bloqueio.id : null;
-      bloqueioRecorrenteSelecionadoId = bloqueioRecorrente ? bloqueioRecorrente.id : null;bloqueioSelecionadoId = bloqueio ? bloqueio.id : null;
+      bloqueioRecorrenteSelecionadoId = bloqueioRecorrente ? bloqueioRecorrente.id : null;
       descontoSelecionadoId = desconto ? desconto.id : null;
-      bloqueioRecorrenteSelecionadoId = null;
 
       abrirAcoesHorario();
     });
@@ -254,13 +257,19 @@ function abrirAcoesHorario() {
   promocaoBox.classList.add("hidden");
   acoesHorarioBox.classList.remove("hidden");
 
-  if (statusSelecionado === "ocupado" || statusSelecionado === "bloqueado") {
+  if (
+    statusSelecionado === "ocupado" ||
+    statusSelecionado === "bloqueado" ||
+    statusSelecionado === "recorrente"
+  ) {
     abrirReservaBtn.disabled = true;
     abrirPromocaoBtn.disabled = true;
+    reservaRecorrenteBtn.disabled = true;
     desmarcarHorarioBtn.disabled = false;
   } else {
     abrirReservaBtn.disabled = false;
     abrirPromocaoBtn.disabled = false;
+    reservaRecorrenteBtn.disabled = false;
     desmarcarHorarioBtn.disabled = statusSelecionado !== "promocao";
   }
 }
@@ -363,6 +372,53 @@ async function salvarPromocao() {
   await carregarAgenda();
 }
 
+async function criarReservaRecorrente() {
+  const arena = adminArena.value;
+  const dataSelecionada = adminData.value;
+
+  if (!horarioSelecionado || !arena || !dataSelecionada) {
+    alert("Selecione arena, data e horário.");
+    return;
+  }
+
+  if (
+    statusSelecionado === "ocupado" ||
+    statusSelecionado === "bloqueado" ||
+    statusSelecionado === "recorrente"
+  ) {
+    alert("Este horário já está ocupado ou bloqueado.");
+    return;
+  }
+
+  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
+  const diaSemana = dataObj.getDay();
+
+  const confirmar = confirm(
+    `Deseja bloquear toda ${nomeDia(diaSemana)} às ${horarioSelecionado} como reserva recorrente?`
+  );
+
+  if (!confirmar) return;
+
+  const { error } = await supabaseClient
+    .from("arena_bloqueios_recorrentes")
+    .insert({
+      arena_slug: arena,
+      dia_semana: diaSemana,
+      horario: horarioSelecionado,
+      motivo: "Reserva recorrente",
+      ativo: true
+    });
+
+  if (error) {
+    console.error(error);
+    alert("Erro ao criar reserva recorrente.");
+    return;
+  }
+
+  alert("Reserva recorrente criada com sucesso!");
+  await carregarAgenda();
+}
+
 async function desmarcarHorario() {
   if (!horarioSelecionado) {
     alert("Selecione um horário.");
@@ -386,6 +442,13 @@ async function desmarcarHorario() {
       .eq("id", bloqueioSelecionadoId);
   }
 
+  if (bloqueioRecorrenteSelecionadoId) {
+    await supabaseClient
+      .from("arena_bloqueios_recorrentes")
+      .update({ ativo: false })
+      .eq("id", bloqueioRecorrenteSelecionadoId);
+  }
+
   if (descontoSelecionadoId) {
     await supabaseClient
       .from("arena_descontos")
@@ -393,12 +456,6 @@ async function desmarcarHorario() {
       .eq("id", descontoSelecionadoId);
   }
 
-  if (bloqueioRecorrenteSelecionadoId) {
-  await supabaseClient
-    .from("arena_bloqueios_recorrentes")
-    .update({ ativo: false })
-    .eq("id", bloqueioRecorrenteSelecionadoId);
-}
   alert("Horário liberado com sucesso!");
   await carregarAgenda();
 }
@@ -409,6 +466,7 @@ function limparSelecao() {
   agendamentoSelecionadoId = null;
   bloqueioSelecionadoId = null;
   descontoSelecionadoId = null;
+  bloqueioRecorrenteSelecionadoId = null;
 
   acoesHorarioBox.classList.add("hidden");
   reservaBox.classList.add("hidden");
@@ -424,60 +482,6 @@ function nomeArena(slug) {
   return arenas[slug] || slug;
 }
 
-function formatarHora(hora) {
-  if (!hora) return "-";
-  return hora.slice(0, 5);
-}
-
-function formatarData(data) {
-  if (!data) return "-";
-  const [ano, mes, dia] = data.split("-");
-  return `${dia}/${mes}/${ano}`;
-}
-
-async function criarReservaRecorrente() {
-  const arena = adminArena.value;
-  const dataSelecionada = adminData.value;
-
-  if (!horarioSelecionado || !arena || !dataSelecionada) {
-    alert("Selecione arena, data e horário.");
-    return;
-  }
-
-  if (statusSelecionado === "ocupado" || statusSelecionado === "bloqueado" || statusSelecionado === "recorrente") {
-    alert("Este horário já está ocupado ou bloqueado.");
-    return;
-  }
-
-  const confirmar = confirm(
-    `Deseja bloquear todo ${nomeDia(new Date(`${dataSelecionada}T12:00:00`).getDay())} às ${horarioSelecionado} como reserva recorrente?`
-  );
-
-  if (!confirmar) return;
-
-  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
-  const diaSemana = dataObj.getDay();
-
-  const { error } = await supabaseClient
-    .from("arena_bloqueios_recorrentes")
-    .insert({
-      arena_slug: arena,
-      dia_semana: diaSemana,
-      horario: horarioSelecionado,
-      motivo: "Reserva recorrente",
-      ativo: true
-    });
-
-  if (error) {
-    console.error(error);
-    alert("Erro ao criar reserva recorrente.");
-    return;
-  }
-
-  alert("Reserva recorrente criada com sucesso!");
-  await carregarAgenda();
-}
-
 function nomeDia(numero) {
   const dias = {
     0: "domingo",
@@ -490,4 +494,15 @@ function nomeDia(numero) {
   };
 
   return dias[numero] || "-";
+}
+
+function formatarHora(hora) {
+  if (!hora) return "-";
+  return hora.slice(0, 5);
+}
+
+function formatarData(data) {
+  if (!data) return "-";
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
 }
