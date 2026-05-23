@@ -85,11 +85,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form || !timeGrid || !dataInput) return;
 
+  if (typeof supabaseClient === "undefined") {
+    console.error("Supabase não carregado. Verifique o supabase-config.js no agendamento.html.");
+    timeGrid.innerHTML = `
+      <div class="closed-message">
+        Erro ao carregar conexão com o sistema de horários.
+      </div>
+    `;
+    return;
+  }
+
   const params = new URLSearchParams(window.location.search);
   const arenaKey = params.get("arena") || "intersul";
   const arena = arenas[arenaKey] || arenas.intersul;
 
   let selectedTime = "";
+  let selectedDiscount = null;
   let autoScrollHorarios;
 
   if (bookingBody) bookingBody.classList.add(`theme-${arenaKey}`);
@@ -103,45 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const today = new Date();
   dataInput.min = today.toISOString().split("T")[0];
-
-  function gerarHorarios(inicio, fim) {
-    const horarios = [];
-
-    for (let hora = inicio; hora <= fim; hora++) {
-      horarios.push(`${String(hora).padStart(2, "0")}:00`);
-    }
-
-    return horarios;
-  }
-
-  function obterHorariosPorArenaEData(dataSelecionada) {
-    if (!dataSelecionada) return [];
-
-    const data = new Date(`${dataSelecionada}T12:00:00`);
-    const diaSemana = data.getDay();
-
-    const domingo = diaSemana === 0;
-    const sabado = diaSemana === 6;
-    const segundaASexta = diaSemana >= 1 && diaSemana <= 5;
-
-    if (arenaKey === "intersul") {
-      if (segundaASexta) return gerarHorarios(19, 23);
-      if (sabado) return gerarHorarios(14, 23);
-      if (domingo) return gerarHorarios(17, 23);
-    }
-
-    if (arenaKey === "alvorada") {
-      if (segundaASexta) return gerarHorarios(19, 23);
-      if (sabado) return gerarHorarios(18, 23);
-      if (domingo) return [];
-    }
-
-    return [];
-  }
-
-  function getBookedKey(date, time) {
-    return `arena_${arenaKey}_${date}_${time}`;
-  }
 
   function iniciarCarrosselHorarios() {
     clearInterval(autoScrollHorarios);
@@ -162,24 +134,93 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3000);
   }
 
-  function criarBotaoHorario(hora, selectedDate) {
+  async function buscarHorariosDaArena(arenaSlug, dataSelecionada) {
+    const dataObj = new Date(`${dataSelecionada}T12:00:00`);
+    const diaSemana = dataObj.getDay();
+
+    const { data: regras, error } = await supabaseClient
+      .from("arena_horarios")
+      .select("*")
+      .eq("arena_slug", arenaSlug)
+      .eq("dia_semana", diaSemana)
+      .eq("ativo", true);
+
+    if (error) {
+      console.error("Erro ao buscar horários:", error);
+      return [];
+    }
+
+    let horariosGerados = [];
+
+    regras.forEach((regra) => {
+      const inicio = Number(regra.hora_inicio.slice(0, 2));
+      const fim = Number(regra.hora_fim.slice(0, 2));
+
+      for (let hora = inicio; hora <= fim; hora++) {
+        horariosGerados.push(`${String(hora).padStart(2, "0")}:00`);
+      }
+    });
+
+    const { data: bloqueios } = await supabaseClient
+      .from("arena_bloqueios")
+      .select("horario")
+      .eq("arena_slug", arenaSlug)
+      .eq("data", dataSelecionada);
+
+    const { data: agendamentos } = await supabaseClient
+      .from("agendamentos")
+      .select("horario")
+      .eq("arena_slug", arenaSlug)
+      .eq("data", dataSelecionada)
+      .eq("status", "confirmado");
+
+    const horariosBloqueados = (bloqueios || []).map((item) =>
+      item.horario.slice(0, 5)
+    );
+
+    const horariosOcupados = (agendamentos || []).map((item) =>
+      item.horario.slice(0, 5)
+    );
+
+    return horariosGerados.filter((hora) => {
+      return !horariosBloqueados.includes(hora) && !horariosOcupados.includes(hora);
+    });
+  }
+
+  async function buscarDesconto(arenaSlug, dataSelecionada, horario) {
+    const { data, error } = await supabaseClient
+      .from("arena_descontos")
+      .select("*")
+      .eq("arena_slug", arenaSlug)
+      .eq("data", dataSelecionada)
+      .eq("horario", horario)
+      .eq("ativo", true)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Erro ao buscar desconto:", error);
+      return null;
+    }
+
+    return data;
+  }
+
+  async function criarBotaoHorario(hora, selectedDate) {
+    const desconto = await buscarDesconto(arenaKey, selectedDate, hora);
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "time-btn";
 
     button.innerHTML = `
       <span class="time-hour">${hora}</span>
-      <span class="time-status">Disponível</span>
+      <span class="time-status">
+        ${desconto ? `Promoção R$ ${desconto.valor_promocional}` : "Disponível"}
+      </span>
     `;
 
-    const isBooked = selectedDate
-      ? localStorage.getItem(getBookedKey(selectedDate, hora))
-      : null;
-
-    if (isBooked) {
-      button.disabled = true;
-      button.classList.add("disabled");
-      button.querySelector(".time-status").textContent = "Ocupado";
+    if (desconto) {
+      button.classList.add("has-discount");
     }
 
     button.addEventListener("click", () => {
@@ -189,15 +230,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       button.classList.add("active");
       selectedTime = hora;
+      selectedDiscount = desconto;
     });
 
     return button;
   }
 
-  function renderHorarios() {
+  async function renderHorarios() {
     const selectedDate = dataInput.value;
     selectedTime = "";
+    selectedDiscount = null;
     timeGrid.innerHTML = "";
+
+    clearInterval(autoScrollHorarios);
 
     if (!selectedDate) {
       timeGrid.innerHTML = `
@@ -208,7 +253,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const horarios = obterHorariosPorArenaEData(selectedDate);
+    timeGrid.innerHTML = `
+      <div class="closed-message">
+        Carregando horários disponíveis...
+      </div>
+    `;
+
+    const horarios = await buscarHorariosDaArena(arenaKey, selectedDate);
+
+    timeGrid.innerHTML = "";
 
     if (horarios.length === 0) {
       timeGrid.innerHTML = `
@@ -219,9 +272,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    horarios.forEach((hora) => {
-      timeGrid.appendChild(criarBotaoHorario(hora, selectedDate));
-    });
+    for (const hora of horarios) {
+      const botao = await criarBotaoHorario(hora, selectedDate);
+      timeGrid.appendChild(botao);
+    }
 
     iniciarCarrosselHorarios();
   }
@@ -229,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
   dataInput.addEventListener("change", renderHorarios);
   renderHorarios();
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const nome = document.getElementById("nome").value.trim();
@@ -247,26 +301,39 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const agendamento = {
-      arena: arena.nome,
-      nome,
-      whatsapp,
-      data,
-      horario: selectedTime,
-      observacao
-    };
+    const valorFinal = selectedDiscount
+      ? selectedDiscount.valor_promocional
+      : null;
 
-    localStorage.setItem(
-      getBookedKey(data, selectedTime),
-      JSON.stringify(agendamento)
-    );
+    const { error } = await supabaseClient
+      .from("agendamentos")
+      .insert({
+        arena_slug: arenaKey,
+        nome,
+        whatsapp,
+        data,
+        horario: selectedTime,
+        valor: valorFinal,
+        observacao,
+        status: "confirmado"
+      });
+
+    if (error) {
+      console.error("Erro ao salvar agendamento:", error);
+      alert("Erro ao salvar agendamento. Tente novamente.");
+      return;
+    }
+
+    const textoValor = selectedDiscount
+      ? `\nValor promocional: R$ ${selectedDiscount.valor_promocional}`
+      : "";
 
     const mensagem = encodeURIComponent(
       `Olá! Gostaria de confirmar um agendamento na ${arena.nome}.\n\n` +
       `Nome: ${nome}\n` +
       `WhatsApp: ${whatsapp}\n` +
       `Data: ${data}\n` +
-      `Horário: ${selectedTime}\n` +
+      `Horário: ${selectedTime}${textoValor}\n` +
       `Observação: ${observacao || "Sem observação"}`
     );
 
@@ -274,6 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ${arena.nome}<br>
       ${data} às ${selectedTime}<br>
       Cliente: ${nome}
+      ${selectedDiscount ? `<br>Promoção: R$ ${selectedDiscount.valor_promocional}` : ""}
     `;
 
     whatsLink.href = `https://wa.me/${arena.whatsapp}?text=${mensagem}`;
