@@ -411,20 +411,17 @@ h1 {
   min-width: 0;
 }
 
-/* ===== CARROSSEL DE HORÁRIOS ===== */
+/* ===== LISTA DE HORÁRIOS ===== */
 
 .time-grid {
   width: 100%;
   max-width: 100%;
   min-width: 0;
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  padding: 4px 2px 12px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible;
+  padding: 4px 2px 8px;
 }
 
 .time-grid::-webkit-scrollbar {
@@ -432,14 +429,14 @@ h1 {
 }
 
 .time-btn {
-  min-width: 136px;
-  max-width: 136px;
-  flex: 0 0 136px;
-  min-height: 82px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  flex: none;
+  min-height: 72px;
   box-sizing: border-box;
-  scroll-snap-align: center;
   border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 22px;
+  border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
   color: #fff;
@@ -448,6 +445,13 @@ h1 {
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.1),
     0 12px 26px rgba(0,0,0,0.22);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+  padding: 16px 18px;
 }
 
 .time-btn:hover {
@@ -462,30 +466,62 @@ h1 {
   box-shadow:
     0 16px 34px rgba(255,215,0,0.26),
     inset 0 1px 0 rgba(255,255,255,0.48);
+  outline: 3px solid #FFD700;
+  transform: scale(1.02);
 }
 
 .time-btn.disabled,
 .time-btn:disabled {
-  opacity: 0.36;
+  opacity: 0.65;
   cursor: not-allowed;
   transform: none;
 }
 
 .time-hour {
   display: block;
-  font-size: 1.28rem;
+  font-size: 1.18rem;
   font-weight: 950;
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .time-status {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 850;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  opacity: 0.78;
+  opacity: 0.9;
+  text-align: right;
+}
+
+.time-btn.livre {
+  background: rgba(0, 168, 89, 0.20);
+  border: 1px solid rgba(0, 168, 89, 0.55);
+}
+
+.time-btn.ocupado,
+.time-btn.bloqueado {
+  background: rgba(220, 38, 38, 0.20);
+  border: 1px solid rgba(220, 38, 38, 0.55);
+  color: rgba(255, 255, 255, 0.65);
+  cursor: not-allowed;
+}
+
+.time-btn.promocao {
+  background: rgba(255, 215, 0, 0.22);
+  border: 1px solid rgba(255, 215, 0, 0.75);
+  box-shadow: 0 12px 30px rgba(255, 215, 0, 0.22);
+}
+
+.time-btn.promocao .time-status {
+  color: #FFD700;
+  font-weight: 900;
+}
+
+.time-btn.promocao.active .time-status,
+.time-btn.active .time-status {
+  color: #1f1f1f;
 }
 
 .closed-message {
@@ -742,45 +778,16 @@ h1 {
   }
 
   .time-btn {
-    min-width: 122px;
-    max-width: 122px;
-    flex-basis: 122px;
+    min-height: 66px;
+    padding: 14px 15px;
+    border-radius: 16px;
   }
 
   .time-hour {
-    font-size: 1.12rem;
+    font-size: 1.08rem;
   }
 
   .time-status {
-    font-size: 0.62rem;
+    font-size: 0.66rem;
   }
-}
-
-.time-btn.livre {
-  background: rgba(0, 168, 89, 0.20);
-  border: 1px solid rgba(0, 168, 89, 0.55);
-}
-
-.time-btn.ocupado,
-.time-btn.bloqueado {
-  background: rgba(220, 38, 38, 0.20);
-  border: 1px solid rgba(220, 38, 38, 0.55);
-  color: rgba(255, 255, 255, 0.65);
-  cursor: not-allowed;
-}
-
-.time-btn.promocao {
-  background: rgba(255, 215, 0, 0.22);
-  border: 1px solid rgba(255, 215, 0, 0.75);
-  box-shadow: 0 12px 30px rgba(255, 215, 0, 0.22);
-}
-
-.time-btn.promocao .time-status {
-  color: #FFD700;
-  font-weight: 800;
-}
-
-.time-btn.active {
-  outline: 3px solid #FFD700;
-  transform: scale(1.04);
 }
