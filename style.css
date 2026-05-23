@@ -755,3 +755,32 @@ h1 {
     font-size: 0.62rem;
   }
 }
+
+.time-btn.livre {
+  background: rgba(0, 168, 89, 0.20);
+  border: 1px solid rgba(0, 168, 89, 0.55);
+}
+
+.time-btn.ocupado,
+.time-btn.bloqueado {
+  background: rgba(220, 38, 38, 0.20);
+  border: 1px solid rgba(220, 38, 38, 0.55);
+  color: rgba(255, 255, 255, 0.65);
+  cursor: not-allowed;
+}
+
+.time-btn.promocao {
+  background: rgba(255, 215, 0, 0.22);
+  border: 1px solid rgba(255, 215, 0, 0.75);
+  box-shadow: 0 12px 30px rgba(255, 215, 0, 0.22);
+}
+
+.time-btn.promocao .time-status {
+  color: #FFD700;
+  font-weight: 800;
+}
+
+.time-btn.active {
+  outline: 3px solid #FFD700;
+  transform: scale(1.04);
+}
