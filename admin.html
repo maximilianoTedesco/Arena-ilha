@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADM | Arena Ilha</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body class="admin-body">
+
+  <main class="admin-container">
+    <section id="loginBox" class="admin-card">
+      <h1>Painel ADM</h1>
+
+      <input id="email" type="email" placeholder="E-mail do administrador" />
+      <input id="password" type="password" placeholder="Senha" />
+
+      <button id="loginBtn">Entrar</button>
+      <p id="loginMessage"></p>
+    </section>
+
+    <section id="adminPanel" class="admin-panel hidden">
+      <div class="admin-header">
+        <h1>Controle de Horários</h1>
+        <button id="logoutBtn">Sair</button>
+      </div>
+
+      <div class="admin-grid">
+        <section class="admin-card">
+          <h2>Horários por Arena</h2>
+
+          <select id="arenaSelect">
+            <option value="intersul">Arena Intersul</option>
+            <option value="alvorada">Arena Alvorada</option>
+          </select>
+
+          <select id="diaSemana">
+            <option value="1">Segunda</option>
+            <option value="2">Terça</option>
+            <option value="3">Quarta</option>
+            <option value="4">Quinta</option>
+            <option value="5">Sexta</option>
+            <option value="6">Sábado</option>
+            <option value="0">Domingo</option>
+          </select>
+
+          <input id="horaInicio" type="time" />
+          <input id="horaFim" type="time" />
+
+          <button id="salvarHorarioBtn">Salvar horário</button>
+
+          <div id="horariosList"></div>
+        </section>
+
+        <section class="admin-card">
+          <h2>Descontos</h2>
+
+          <select id="descontoArena">
+            <option value="intersul">Arena Intersul</option>
+            <option value="alvorada">Arena Alvorada</option>
+          </select>
+
+          <input id="descontoData" type="date" />
+          <input id="descontoHorario" type="time" />
+          <input id="valorNormal" type="number" placeholder="Valor normal" />
+          <input id="valorPromocional" type="number" placeholder="Valor promocional" />
+          <input id="descricaoDesconto" type="text" placeholder="Descrição do desconto" />
+
+          <button id="salvarDescontoBtn">Salvar desconto</button>
+
+          <div id="descontosList"></div>
+        </section>
+
+        <section class="admin-card">
+          <h2>Bloquear Horário</h2>
+
+          <select id="bloqueioArena">
+            <option value="intersul">Arena Intersul</option>
+            <option value="alvorada">Arena Alvorada</option>
+          </select>
+
+          <input id="bloqueioData" type="date" />
+          <input id="bloqueioHorario" type="time" />
+          <input id="motivoBloqueio" type="text" placeholder="Motivo" />
+
+          <button id="salvarBloqueioBtn">Bloquear</button>
+
+          <div id="bloqueiosList"></div>
+        </section>
+
+        <section class="admin-card">
+          <h2>Agendamentos</h2>
+          <div id="agendamentosList"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
