@@ -32,7 +32,7 @@ async function iniciarAdmin() {
 }
 
 async function login() {
-  const email = document.getElementById("email").value.trim();
+  const email = "admin@arenailha.com";
   const password = document.getElementById("password").value.trim();
 
   loginMessage.textContent = "Entrando...";
@@ -43,7 +43,7 @@ async function login() {
   });
 
   if (error) {
-    loginMessage.textContent = "E-mail ou senha inválidos.";
+    loginMessage.textContent = "Senha inválida.";
     return;
   }
 
