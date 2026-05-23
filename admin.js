@@ -32,7 +32,7 @@ async function iniciarAdmin() {
 }
 
 async function login() {
-  const email = "admin@arenailha.com";
+  const email = "usuario@ilha.com";
   const password = document.getElementById("password").value.trim();
 
   loginMessage.textContent = "Entrando...";
