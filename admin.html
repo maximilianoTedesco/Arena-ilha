@@ -13,7 +13,6 @@
     <section id="loginBox" class="admin-card">
       <h1>Painel ADM</h1>
 
-      
       <input id="password" type="password" placeholder="Senha do administrador" />
 
       <button id="loginBtn">Entrar</button>
@@ -54,20 +53,36 @@
         </section>
 
         <section class="admin-card">
-          <h2>Descontos</h2>
+          <h2>Promoções por horário</h2>
 
-          <select id="descontoArena">
+          <label>Arena</label>
+          <select id="promoArena">
             <option value="intersul">Arena Intersul</option>
             <option value="alvorada">Arena Alvorada</option>
           </select>
 
-          <input id="descontoData" type="date" />
-          <input id="descontoHorario" type="time" />
-          <input id="valorNormal" type="number" placeholder="Valor normal" />
-          <input id="valorPromocional" type="number" placeholder="Valor promocional" />
-          <input id="descricaoDesconto" type="text" placeholder="Descrição do desconto" />
+          <label>Data</label>
+          <input id="promoData" type="date" />
 
-          <button id="salvarDescontoBtn">Salvar desconto</button>
+          <button id="buscarHorariosPromoBtn">Buscar horários</button>
+
+          <div id="promoLegenda" class="promo-legenda">
+            <span><b class="legenda-verde"></b> Livre</span>
+            <span><b class="legenda-vermelho"></b> Ocupado/Bloqueado</span>
+            <span><b class="legenda-amarelo"></b> Com promoção</span>
+          </div>
+
+          <div id="promoHorariosList" class="promo-horarios-list"></div>
+
+          <div id="promoFormBox" class="promo-form-box hidden">
+            <h3 id="promoHorarioSelecionado">Horário selecionado</h3>
+
+            <input id="promoValorNormal" type="number" placeholder="Valor normal" />
+            <input id="promoValorPromocional" type="number" placeholder="Valor promocional" />
+            <input id="promoDescricao" type="text" placeholder="Ex: Condição especial hoje" />
+
+            <button id="salvarPromoSelecionadaBtn">Salvar promoção</button>
+          </div>
 
           <div id="descontosList"></div>
         </section>
