@@ -101,13 +101,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedTime = "";
   let selectedDiscount = null;
-  let autoScrollHorarios;
 
   if (bookingBody) bookingBody.classList.add(`theme-${arenaKey}`);
 
-  arenaTitle.textContent = arena.nome;
-  arenaLogo.src = arena.logo;
-  arenaLogo.alt = arena.nome;
+  if (arenaTitle) arenaTitle.textContent = arena.nome;
+  if (arenaLogo) {
+    arenaLogo.src = arena.logo;
+    arenaLogo.alt = arena.nome;
+  }
 
   iniciarCarrossel(arena.imagens);
   iniciarGaleriaArena(arena.imagens);
@@ -115,184 +116,145 @@ document.addEventListener("DOMContentLoaded", () => {
   const today = new Date();
   dataInput.min = today.toISOString().split("T")[0];
 
-  function iniciarCarrosselHorarios() {
-    clearInterval(autoScrollHorarios);
-
-    autoScrollHorarios = setInterval(() => {
-      const card = timeGrid.querySelector(".time-btn:not(:disabled)");
-      if (!card) return;
-
-      const cardWidth = card.offsetWidth + 12;
-      const chegouNoFim =
-        timeGrid.scrollLeft + timeGrid.clientWidth >= timeGrid.scrollWidth - 5;
-
-      if (chegouNoFim) {
-        timeGrid.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        timeGrid.scrollBy({ left: cardWidth, behavior: "smooth" });
-      }
-    }, 3000);
-  }
-
   async function buscarHorariosDaArena(arenaSlug, dataSelecionada) {
-  const dataObj = new Date(`${dataSelecionada}T12:00:00`);
-  const diaSemana = dataObj.getDay();
+    const dataObj = new Date(`${dataSelecionada}T12:00:00`);
+    const diaSemana = dataObj.getDay();
 
-  const { data: regras, error } = await supabaseClient
-    .from("arena_horarios")
-    .select("*")
-    .eq("arena_slug", arenaSlug)
-    .eq("dia_semana", diaSemana)
-    .eq("ativo", true);
+    const { data: regras, error } = await supabaseClient
+      .from("arena_horarios")
+      .select("*")
+      .eq("arena_slug", arenaSlug)
+      .eq("dia_semana", diaSemana)
+      .eq("ativo", true);
 
-  if (error) {
-    console.error("Erro ao buscar horários:", error);
-    return [];
-  }
-
-  let horariosGerados = [];
-
-  regras.forEach((regra) => {
-    const inicio = Number(regra.hora_inicio.slice(0, 2));
-    const fim = Number(regra.hora_fim.slice(0, 2));
-
-    for (let hora = inicio; hora <= fim; hora++) {
-      horariosGerados.push(`${String(hora).padStart(2, "0")}:00`);
-    }
-  });
-
-  horariosGerados = [...new Set(horariosGerados)].sort();
-
-  const { data: bloqueios } = await supabaseClient
-    .from("arena_bloqueios")
-    .select("horario")
-    .eq("arena_slug", arenaSlug)
-    .eq("data", dataSelecionada);
-
-  const { data: bloqueiosRecorrentes } = await supabaseClient
-    .from("arena_bloqueios_recorrentes")
-    .select("horario")
-    .eq("arena_slug", arenaSlug)
-    .eq("dia_semana", diaSemana)
-    .eq("ativo", true);
-
-  const { data: agendamentos } = await supabaseClient
-    .from("agendamentos")
-    .select("horario")
-    .eq("arena_slug", arenaSlug)
-    .eq("data", dataSelecionada)
-    .eq("status", "confirmado");
-
-  const { data: descontos } = await supabaseClient
-    .from("arena_descontos")
-    .select("*")
-    .eq("arena_slug", arenaSlug)
-    .eq("data", dataSelecionada)
-    .eq("ativo", true);
-
-  const horariosBloqueados = [
-    ...(bloqueios || []).map((item) => item.horario.slice(0, 5)),
-    ...(bloqueiosRecorrentes || []).map((item) => item.horario.slice(0, 5))
-  ];
-
-  const horariosOcupados = (agendamentos || []).map((item) =>
-    item.horario.slice(0, 5)
-  );
-
-  return horariosGerados.map((hora) => {
-    const desconto = (descontos || []).find(
-      (item) => item.horario.slice(0, 5) === hora
-    );
-
-    if (horariosOcupados.includes(hora)) {
-      return {
-        hora,
-        status: "ocupado",
-        texto: "Reservado",
-        desconto: null
-      };
+    if (error) {
+      console.error("Erro ao buscar horários:", error);
+      return [];
     }
 
-    if (horariosBloqueados.includes(hora)) {
-      return {
-        hora,
-        status: "bloqueado",
-        texto: "Bloqueado",
-        desconto: null
-      };
-    }
+    let horariosGerados = [];
 
-    if (desconto) {
-      return {
-        hora,
-        status: "promocao",
-        texto: `Promoção R$ ${desconto.valor_promocional}`,
-        desconto
-      };
-    }
+    (regras || []).forEach((regra) => {
+      const inicio = Number(regra.hora_inicio.slice(0, 2));
+      const fim = Number(regra.hora_fim.slice(0, 2));
 
-    return {
-      hora,
-      status: "livre",
-      texto: "Disponível",
-      desconto: null
-    };
-  });
-}
+      for (let hora = inicio; hora <= fim; hora++) {
+        horariosGerados.push(`${String(hora).padStart(2, "0")}:00`);
+      }
+    });
 
-  async function buscarDesconto(arenaSlug, dataSelecionada, horario) {
-    const { data, error } = await supabaseClient
+    horariosGerados = [...new Set(horariosGerados)].sort();
+
+    const { data: bloqueios } = await supabaseClient
+      .from("arena_bloqueios")
+      .select("horario")
+      .eq("arena_slug", arenaSlug)
+      .eq("data", dataSelecionada);
+
+    const { data: bloqueiosRecorrentes } = await supabaseClient
+      .from("arena_bloqueios_recorrentes")
+      .select("horario")
+      .eq("arena_slug", arenaSlug)
+      .eq("dia_semana", diaSemana)
+      .eq("ativo", true);
+
+    const { data: agendamentos } = await supabaseClient
+      .from("agendamentos")
+      .select("horario")
+      .eq("arena_slug", arenaSlug)
+      .eq("data", dataSelecionada)
+      .eq("status", "confirmado");
+
+    const { data: descontos } = await supabaseClient
       .from("arena_descontos")
       .select("*")
       .eq("arena_slug", arenaSlug)
       .eq("data", dataSelecionada)
-      .eq("horario", horario)
-      .eq("ativo", true)
-      .maybeSingle();
+      .eq("ativo", true);
 
-    if (error) {
-      console.error("Erro ao buscar desconto:", error);
-      return null;
-    }
+    const horariosBloqueados = [
+      ...(bloqueios || []).map((item) => item.horario.slice(0, 5)),
+      ...(bloqueiosRecorrentes || []).map((item) => item.horario.slice(0, 5))
+    ];
 
-    return data;
+    const horariosOcupados = (agendamentos || []).map((item) =>
+      item.horario.slice(0, 5)
+    );
+
+    return horariosGerados.map((hora) => {
+      const desconto = (descontos || []).find(
+        (item) => item.horario.slice(0, 5) === hora
+      );
+
+      if (horariosOcupados.includes(hora)) {
+        return {
+          hora,
+          status: "ocupado",
+          texto: "Reservado",
+          desconto: null
+        };
+      }
+
+      if (horariosBloqueados.includes(hora)) {
+        return {
+          hora,
+          status: "bloqueado",
+          texto: "Bloqueado",
+          desconto: null
+        };
+      }
+
+      if (desconto) {
+        return {
+          hora,
+          status: "promocao",
+          texto: `Promoção R$ ${desconto.valor_promocional}`,
+          desconto
+        };
+      }
+
+      return {
+        hora,
+        status: "livre",
+        texto: "Disponível",
+        desconto: null
+      };
+    });
   }
 
   function criarBotaoHorario(itemHorario) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = `time-btn ${itemHorario.status}`;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `time-btn ${itemHorario.status}`;
 
-  button.innerHTML = `
-    <span class="time-hour">${itemHorario.hora}</span>
-    <span class="time-status">${itemHorario.texto}</span>
-  `;
+    button.innerHTML = `
+      <span class="time-hour">${itemHorario.hora}</span>
+      <span class="time-status">${itemHorario.texto}</span>
+    `;
 
-  if (itemHorario.status === "ocupado" || itemHorario.status === "bloqueado") {
-    button.disabled = true;
-    return button;
-  }
+    if (itemHorario.status === "ocupado" || itemHorario.status === "bloqueado") {
+      button.disabled = true;
+      return button;
+    }
 
-  button.addEventListener("click", () => {
-    document.querySelectorAll(".time-btn").forEach((btn) => {
-      btn.classList.remove("active");
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".time-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+      selectedTime = itemHorario.hora;
+      selectedDiscount = itemHorario.desconto;
     });
 
-    button.classList.add("active");
-    selectedTime = itemHorario.hora;
-    selectedDiscount = itemHorario.desconto;
-  });
-
-  return button;
-}
+    return button;
+  }
 
   async function renderHorarios() {
     const selectedDate = dataInput.value;
     selectedTime = "";
     selectedDiscount = null;
     timeGrid.innerHTML = "";
-
-    clearInterval(autoScrollHorarios);
 
     if (!selectedDate) {
       timeGrid.innerHTML = `
@@ -322,12 +284,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    for (const itemHorario of horarios) {
+    horarios.forEach((itemHorario) => {
       const botao = criarBotaoHorario(itemHorario);
       timeGrid.appendChild(botao);
-    }
-
-    iniciarCarrosselHorarios();
+    });
   }
 
   dataInput.addEventListener("change", renderHorarios);
@@ -351,6 +311,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const textoValor = selectedDiscount
+      ? `\nValor promocional: R$ ${selectedDiscount.valor_promocional}`
+      : "";
+
+    const mensagem = encodeURIComponent(
+      `Olá! Gostaria de confirmar um agendamento na ${arena.nome}.\n\n` +
+      `Nome: ${nome}\n` +
+      `WhatsApp: ${whatsapp}\n` +
+      `Data: ${data}\n` +
+      `Horário: ${selectedTime}${textoValor}\n` +
+      `Observação: ${observacao || "Sem observação"}`
+    );
+
+    const whatsappUrl = `https://wa.me/${arena.whatsapp}?text=${mensagem}`;
+
+    const abaWhatsapp = window.open("", "_blank");
+
     const valorFinal = selectedDiscount
       ? selectedDiscount.valor_promocional
       : null;
@@ -370,22 +347,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (error) {
       console.error("Erro ao salvar agendamento:", error);
-      alert("Erro ao salvar agendamento. Tente novamente.");
+
+      if (abaWhatsapp) {
+        abaWhatsapp.close();
+      }
+
+      alert("Erro ao salvar agendamento. Verifique se o horário ainda está disponível e tente novamente.");
+      await renderHorarios();
       return;
     }
-
-    const textoValor = selectedDiscount
-      ? `\nValor promocional: R$ ${selectedDiscount.valor_promocional}`
-      : "";
-
-    const mensagem = encodeURIComponent(
-      `Olá! Gostaria de confirmar um agendamento na ${arena.nome}.\n\n` +
-      `Nome: ${nome}\n` +
-      `WhatsApp: ${whatsapp}\n` +
-      `Data: ${data}\n` +
-      `Horário: ${selectedTime}${textoValor}\n` +
-      `Observação: ${observacao || "Sem observação"}`
-    );
 
     successText.innerHTML = `
       ${arena.nome}<br>
@@ -394,10 +364,20 @@ document.addEventListener("DOMContentLoaded", () => {
       ${selectedDiscount ? `<br>Promoção: R$ ${selectedDiscount.valor_promocional}` : ""}
     `;
 
-    whatsLink.href = `https://wa.me/${arena.whatsapp}?text=${mensagem}`;
+    whatsLink.href = whatsappUrl;
+    whatsLink.target = "_blank";
+    whatsLink.rel = "noopener noreferrer";
 
     form.classList.add("hidden");
     successBox.classList.remove("hidden");
     successBox.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    await renderHorarios();
+
+    if (abaWhatsapp) {
+      abaWhatsapp.location.href = whatsappUrl;
+    } else {
+      window.location.href = whatsappUrl;
+    }
   });
 });
