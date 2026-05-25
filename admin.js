@@ -429,37 +429,55 @@ async function desmarcarHorario() {
   if (!confirmar) return;
 
   if (agendamentoSelecionadoId) {
-  const { error } = await supabaseClient
-    .from("agendamentos")
-    .update({ status: "cancelado" })
-    .eq("id", agendamentoSelecionadoId);
+    const { error } = await supabaseClient
+      .from("agendamentos")
+      .update({ status: "cancelado" })
+      .eq("id", agendamentoSelecionadoId);
 
-  if (error) {
-    console.error("Erro ao cancelar agendamento:", error);
-    alert("Erro ao desmarcar o horário avulso.");
-    return;
+    if (error) {
+      console.error("Erro ao cancelar agendamento:", error);
+      alert("Erro ao desmarcar o horário avulso.");
+      return;
+    }
   }
-}
 
   if (bloqueioSelecionadoId) {
-    await supabaseClient
+    const { error } = await supabaseClient
       .from("arena_bloqueios")
       .delete()
       .eq("id", bloqueioSelecionadoId);
+
+    if (error) {
+      console.error("Erro ao remover bloqueio:", error);
+      alert("Erro ao remover bloqueio.");
+      return;
+    }
   }
 
   if (bloqueioRecorrenteSelecionadoId) {
-    await supabaseClient
+    const { error } = await supabaseClient
       .from("arena_bloqueios_recorrentes")
       .update({ ativo: false })
       .eq("id", bloqueioRecorrenteSelecionadoId);
+
+    if (error) {
+      console.error("Erro ao remover recorrência:", error);
+      alert("Erro ao remover reserva recorrente.");
+      return;
+    }
   }
 
   if (descontoSelecionadoId) {
-    await supabaseClient
+    const { error } = await supabaseClient
       .from("arena_descontos")
       .delete()
       .eq("id", descontoSelecionadoId);
+
+    if (error) {
+      console.error("Erro ao remover promoção:", error);
+      alert("Erro ao remover promoção.");
+      return;
+    }
   }
 
   alert("Horário liberado com sucesso!");
