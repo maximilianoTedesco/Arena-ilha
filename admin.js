@@ -429,11 +429,17 @@ async function desmarcarHorario() {
   if (!confirmar) return;
 
   if (agendamentoSelecionadoId) {
-    await supabaseClient
-      .from("agendamentos")
-      .update({ status: "cancelado" })
-      .eq("id", agendamentoSelecionadoId);
+  const { error } = await supabaseClient
+    .from("agendamentos")
+    .update({ status: "cancelado" })
+    .eq("id", agendamentoSelecionadoId);
+
+  if (error) {
+    console.error("Erro ao cancelar agendamento:", error);
+    alert("Erro ao desmarcar o horário avulso.");
+    return;
   }
+}
 
   if (bloqueioSelecionadoId) {
     await supabaseClient
